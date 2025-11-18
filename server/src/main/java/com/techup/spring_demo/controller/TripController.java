@@ -1,5 +1,6 @@
 package com.techup.spring_demo.controller;
 
+import com.techup.spring_demo.dto.TripPageResponse;
 import com.techup.spring_demo.dto.TripRequest;
 import com.techup.spring_demo.dto.TripResponse;
 import com.techup.spring_demo.service.TripService;
@@ -19,6 +20,8 @@ public class TripController {
     
     private final TripService tripService;
     
+    // Authenticated endpoints (must come before public /{id} to avoid route conflict)
+    
     // GET /api/trips/mine - Get user's trips
     @GetMapping("/mine")
     public ResponseEntity<List<TripResponse>> getMyTrips(
@@ -30,6 +33,40 @@ public class TripController {
         
         List<TripResponse> trips = tripService.getTripsByAuthor(userId);
         return ResponseEntity.ok(trips);
+    }
+    
+    // Public API endpoints
+    
+    // GET /api/trips - Get all trips with pagination
+    @GetMapping
+    public ResponseEntity<TripPageResponse> getAllTrips(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query) {
+        
+        // If query parameter is provided, perform search
+        if (query != null && !query.trim().isEmpty()) {
+            TripPageResponse result = tripService.searchTrips(query.trim(), page, size);
+            return ResponseEntity.ok(result);
+        }
+        
+        // Otherwise, return all trips with pagination
+        TripPageResponse result = tripService.getAllTrips(page, size);
+        return ResponseEntity.ok(result);
+    }
+    
+    // GET /api/trips/{id} - Get trip by ID (public)
+    @GetMapping("/{id}")
+    public ResponseEntity<TripResponse> getTripById(@PathVariable Long id) {
+        try {
+            TripResponse trip = tripService.getTripById(id);
+            return ResponseEntity.ok(trip);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
     
     // POST /api/trips - Create new trip

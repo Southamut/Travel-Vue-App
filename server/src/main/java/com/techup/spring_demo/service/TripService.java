@@ -1,11 +1,15 @@
 package com.techup.spring_demo.service;
 
+import com.techup.spring_demo.dto.TripPageResponse;
 import com.techup.spring_demo.dto.TripRequest;
 import com.techup.spring_demo.dto.TripResponse;
 import com.techup.spring_demo.entity.Trip;
 import com.techup.spring_demo.repository.TripRepository;
 import com.techup.spring_demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,6 +86,51 @@ public class TripService {
         }
         
         tripRepository.delete(trip);
+    }
+    
+    // Public API methods
+    public TripPageResponse getAllTrips(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Trip> tripPage = tripRepository.findAll(pageable);
+        
+        List<TripResponse> content = tripPage.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        
+        return new TripPageResponse(
+                content,
+                tripPage.getNumber(),
+                tripPage.getSize(),
+                tripPage.getTotalElements(),
+                tripPage.getTotalPages(),
+                tripPage.hasNext(),
+                tripPage.hasPrevious()
+        );
+    }
+    
+    public TripPageResponse searchTrips(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Trip> tripPage = tripRepository.searchTrips(query, pageable);
+        
+        List<TripResponse> content = tripPage.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        
+        return new TripPageResponse(
+                content,
+                tripPage.getNumber(),
+                tripPage.getSize(),
+                tripPage.getTotalElements(),
+                tripPage.getTotalPages(),
+                tripPage.hasNext(),
+                tripPage.hasPrevious()
+        );
+    }
+    
+    public TripResponse getTripById(Long id) {
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trip not found"));
+        return mapToResponse(trip);
     }
     
     private TripResponse mapToResponse(Trip trip) {

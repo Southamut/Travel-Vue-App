@@ -12,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TripService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(TripService.class);
     
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
@@ -33,6 +37,11 @@ public class TripService {
     
     @Transactional
     public TripResponse createTrip(TripRequest request, Long authorId) {
+        // Verify authorId is not null
+        if (authorId == null) {
+            throw new RuntimeException("User ID is required");
+        }
+        
         // Verify user exists
         userRepository.findById(authorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -58,6 +67,8 @@ public class TripService {
         
         // Check ownership
         if (!trip.getAuthorId().equals(authorId)) {
+            logger.warn("Unauthorized update attempt: User {} tried to update trip {} owned by {}", 
+                       authorId, tripId, trip.getAuthorId());
             throw new RuntimeException("You don't have permission to edit this trip");
         }
         
@@ -84,6 +95,8 @@ public class TripService {
         
         // Check ownership
         if (!trip.getAuthorId().equals(authorId)) {
+            logger.warn("Unauthorized delete attempt: User {} tried to delete trip {} owned by {}", 
+                       authorId, tripId, trip.getAuthorId());
             throw new RuntimeException("You don't have permission to delete this trip");
         }
         

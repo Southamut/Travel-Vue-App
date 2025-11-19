@@ -63,16 +63,12 @@ public class TripController {
     
     // GET /api/trips/mine - Get user's trips
     @GetMapping("/mine")
-    public ResponseEntity<?> getMyTrips(
+    public ResponseEntity<List<TripResponse>> getMyTrips(
             @RequestHeader(value = "Authorization", required = false) String authorization) {
         
-        try {
-            Long userId = getUserIdFromToken(authorization);
-            List<TripResponse> trips = tripService.getTripsByAuthor(userId);
-            return ResponseEntity.ok(trips);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        Long userId = getUserIdFromToken(authorization);
+        List<TripResponse> trips = tripService.getTripsByAuthor(userId);
+        return ResponseEntity.ok(trips);
     }
     
     // Public API endpoints
@@ -98,15 +94,8 @@ public class TripController {
     // GET /api/trips/{id} - Get trip by ID (public)
     @GetMapping("/{id}")
     public ResponseEntity<TripResponse> getTripById(@PathVariable Long id) {
-        try {
-            TripResponse trip = tripService.getTripById(id);
-            return ResponseEntity.ok(trip);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        TripResponse trip = tripService.getTripById(id);
+        return ResponseEntity.ok(trip);
     }
     
     // POST /api/trips - Create new trip
@@ -115,13 +104,9 @@ public class TripController {
             @Valid @RequestBody TripRequest request,
             @RequestHeader(value = "Authorization", required = false) String authorization) {
         
-        try {
-            Long userId = getUserIdFromToken(authorization);
-            TripResponse trip = tripService.createTrip(request, userId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(trip);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        Long userId = getUserIdFromToken(authorization);
+        TripResponse trip = tripService.createTrip(request, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(trip);
     }
     
     // PUT /api/trips/{id} - Update trip
@@ -136,13 +121,12 @@ public class TripController {
             TripResponse trip = tripService.updateTrip(id, request, userId);
             return ResponseEntity.ok(trip);
         } catch (RuntimeException e) {
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
+            // Only handle auth errors here, let permission errors propagate to GlobalExceptionHandler
+            if (e.getMessage().contains("Unauthorized") || e.getMessage().contains("Invalid token")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            if (e.getMessage().contains("permission")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            // Re-throw to let GlobalExceptionHandler handle permission errors
+            throw e;
         }
     }
     
@@ -157,13 +141,12 @@ public class TripController {
             tripService.deleteTrip(id, userId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
+            // Only handle auth errors here, let permission errors propagate to GlobalExceptionHandler
+            if (e.getMessage().contains("Unauthorized") || e.getMessage().contains("Invalid token")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            if (e.getMessage().contains("permission")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            // Re-throw to let GlobalExceptionHandler handle permission errors
+            throw e;
         }
     }
 }

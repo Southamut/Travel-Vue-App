@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
@@ -24,19 +24,28 @@ public class GlobalExceptionHandler {
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
-    
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("message", ex.getMessage());
 
+        String message = ex.getMessage();
+
         // Check if it's an authentication error
-        if (ex.getMessage().contains("Invalid email or password") || 
-            ex.getMessage().contains("Login failed")) {
+        if (message != null && (message.contains("Invalid email or password") ||
+                message.contains("Login failed") ||
+                message.contains("Unauthorized") ||
+                message.contains("Invalid token"))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
-        
+
+        // Check if it's a permission/authorization error
+        if (message != null && (message.contains("permission") ||
+                message.contains("don't have permission"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+        }
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }
-

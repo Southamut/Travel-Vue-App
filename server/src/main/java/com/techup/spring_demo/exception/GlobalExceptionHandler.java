@@ -29,6 +29,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("message", ex.getMessage());
+
+        // Check if it's an authentication error
+        if (ex.getMessage().contains("Invalid email or password") || 
+            ex.getMessage().contains("Login failed")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+        
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }

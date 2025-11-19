@@ -1,5 +1,7 @@
 package com.techup.spring_demo.controller;
 
+import com.techup.spring_demo.dto.LoginRequest;
+import com.techup.spring_demo.dto.LoginResponse;
 import com.techup.spring_demo.dto.RegisterRequest;
 import com.techup.spring_demo.dto.RegisterResponse;
 import com.techup.spring_demo.service.SupabaseAuthService;
@@ -48,6 +50,41 @@ public class AuthController {
                     request.getEmail()
             );
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        try {
+            SupabaseAuthService.LoginResult result = supabaseAuthService.login(
+                    request.getEmail(),
+                    request.getPassword()
+            );
+            
+            if (result.isSuccess()) {
+                LoginResponse response = new LoginResponse(
+                        result.getAccessToken(),
+                        result.getRefreshToken(),
+                        new LoginResponse.UserInfo(result.getUserId(), result.getEmail())
+                );
+                return ResponseEntity.ok(response);
+            } else {
+                LoginResponse response = new LoginResponse(
+                        null,
+                        null,
+                        new LoginResponse.UserInfo(null, result.getEmail())
+                );
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new LoginResponse(
+                            null,
+                            null,
+                            new LoginResponse.UserInfo(null, request.getEmail())
+                    ));
         }
     }
 }

@@ -36,7 +36,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     
     // Get all trips with pagination and author
     @EntityGraph(attributePaths = {"author"})
-    Page<Trip> findAll(Pageable pageable);
+    Page<Trip> findByAuthorId(Long authorId, Pageable pageable);
     
     // Get trip by ID with author
     @EntityGraph(attributePaths = {"author"})

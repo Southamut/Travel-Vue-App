@@ -20,6 +20,7 @@ public class TripResponse {
     private List<String> tags = new ArrayList<>();
     private Double latitude;
     private Double longitude;
+    private String province;
     private Long authorId;
     private String authorName;
     private LocalDateTime createdAt;

@@ -44,6 +44,7 @@ public class TripService {
         trip.setTags(request.getTags() != null ? request.getTags() : new ArrayList<>());
         trip.setLatitude(request.getLatitude());
         trip.setLongitude(request.getLongitude());
+        trip.setProvince(request.getProvince());
         trip.setAuthorId(authorId);
         
         Trip savedTrip = tripRepository.save(trip);
@@ -70,6 +71,7 @@ public class TripService {
         }
         trip.setLatitude(request.getLatitude());
         trip.setLongitude(request.getLongitude());
+        trip.setProvince(request.getProvince());
         
         Trip updatedTrip = tripRepository.save(trip);
         return mapToResponse(updatedTrip);
@@ -127,6 +129,25 @@ public class TripService {
         );
     }
     
+    public TripPageResponse getTripsByAuthor(Long authorId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Trip> tripPage = tripRepository.findByAuthorId(authorId, pageable);
+        
+        List<TripResponse> content = tripPage.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        
+        return new TripPageResponse(
+                content,
+                tripPage.getNumber(),
+                tripPage.getSize(),
+                tripPage.getTotalElements(),
+                tripPage.getTotalPages(),
+                tripPage.hasNext(),
+                tripPage.hasPrevious()
+        );
+    }
+    
     public TripResponse getTripById(Long id) {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -142,6 +163,7 @@ public class TripService {
         response.setTags(trip.getTags() != null ? trip.getTags() : new ArrayList<>());
         response.setLatitude(trip.getLatitude());
         response.setLongitude(trip.getLongitude());
+        response.setProvince(trip.getProvince());
         response.setAuthorId(trip.getAuthorId());
         response.setAuthorName(trip.getAuthor() != null ? trip.getAuthor().getDisplayName() : null);
         response.setCreatedAt(trip.getCreatedAt());

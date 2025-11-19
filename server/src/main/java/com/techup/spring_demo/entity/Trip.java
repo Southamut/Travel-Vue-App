@@ -40,6 +40,9 @@ public class Trip {
     
     private Double longitude;
     
+    @Column(name = "province")
+    private String province;
+    
     @Column(name = "author_id")
     private Long authorId;
     

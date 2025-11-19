@@ -130,6 +130,36 @@ public class SupabaseAuthService {
         }
     }
 
+    // Get User Service
+    public UserResult getCurrentUser(String accessToken) {
+        try {
+            UserResponse response = supabaseWebClient
+                    .get()
+                    .uri("/user")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .bodyToMono(UserResponse.class)
+                    .block();
+
+            if (response != null) {
+                return new UserResult(
+                        true,
+                        response.getId(),
+                        response.getEmail(),
+                        response.getDisplayName(),
+                        response.getCreatedAt());
+            }
+            throw new RuntimeException("Failed to get user information");
+
+        } catch (WebClientResponseException.Unauthorized e) {
+            throw new RuntimeException("Invalid or expired token");
+        } catch (WebClientResponseException e) {
+            throw new RuntimeException("Failed to get user information: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get user information: " + e.getMessage());
+        }
+    }
+
     // Register Request and Response
     @Data
     private static class RegisterRequest {
@@ -226,10 +256,49 @@ public class SupabaseAuthService {
     public static class LogoutResult {
         private boolean success;
         private String message;
-        
+
         public LogoutResult(boolean success, String message) {
             this.success = success;
             this.message = message;
+        }
+    }
+
+    // Get User Request and Response
+    @Data
+    private static class UserResponse {
+        private String id;
+        private String email;
+        @JsonProperty("user_metadata")
+        private UserMetadata userMetadata;
+        @JsonProperty("created_at")
+        private String createdAt;
+
+        @Data
+        private static class UserMetadata {
+            @JsonProperty("display_name")
+            private String displayName;
+        }
+
+        public String getDisplayName() {
+            return userMetadata != null ? userMetadata.getDisplayName() : null;
+        }
+    }
+
+    @Data
+    public static class UserResult {
+        private boolean success;
+        private String id;
+        private String email;
+        private String displayName;
+        private String createdAt;
+
+        public UserResult(boolean success, String id, String email,
+                String displayName, String createdAt) {
+            this.success = success;
+            this.id = id;
+            this.email = email;
+            this.displayName = displayName;
+            this.createdAt = createdAt;
         }
     }
 }

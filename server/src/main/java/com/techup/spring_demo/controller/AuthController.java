@@ -3,6 +3,7 @@ package com.techup.spring_demo.controller;
 import com.techup.spring_demo.dto.LoginRequest;
 import com.techup.spring_demo.dto.LoginResponse;
 import com.techup.spring_demo.dto.LogoutResponse;
+import com.techup.spring_demo.dto.UserResponse;
 import com.techup.spring_demo.dto.RegisterRequest;
 import com.techup.spring_demo.dto.RegisterResponse;
 import com.techup.spring_demo.service.SupabaseAuthService;
@@ -117,5 +118,37 @@ public class AuthController {
                     .body(new LogoutResponse(e.getMessage()));
         }
     }
+
+    @GetMapping("/me")
+public ResponseEntity<UserResponse> getCurrentUser(
+        @RequestHeader(value = "Authorization", required = false) String authorization) {
+    
+    if (authorization == null || !authorization.startsWith("Bearer ")) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+    
+    try {
+        String token = authorization.substring(7); // Remove "Bearer " prefix
+        SupabaseAuthService.UserResult result = supabaseAuthService.getCurrentUser(token);
+        
+        if (result.isSuccess()) {
+            UserResponse response = new UserResponse(
+                    result.getId(),
+                    result.getEmail(),
+                    result.getDisplayName(),
+                    result.getCreatedAt()
+            );
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        
+    } catch (RuntimeException e) {
+        if (e.getMessage().contains("Invalid or expired token")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+}
 
 }

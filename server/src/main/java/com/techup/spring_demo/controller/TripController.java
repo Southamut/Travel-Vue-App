@@ -4,6 +4,9 @@ import com.techup.spring_demo.dto.TripPageResponse;
 import com.techup.spring_demo.dto.TripRequest;
 import com.techup.spring_demo.dto.TripResponse;
 import com.techup.spring_demo.service.TripService;
+import com.techup.spring_demo.service.SupabaseAuthService;
+import com.techup.spring_demo.repository.UserRepository;
+import com.techup.spring_demo.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,18 +22,51 @@ import java.util.List;
 public class TripController {
     
     private final TripService tripService;
+    private final SupabaseAuthService supabaseAuthService;
+    private final UserRepository userRepository;
+    
+    // Helper method to extract user ID from token
+    private Long getUserIdFromToken(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new RuntimeException("Unauthorized: No token provided");
+        }
+        String token = authorization.substring(7);
+        
+        try {
+            SupabaseAuthService.UserResult user = supabaseAuthService.getCurrentUser(token);
+            if (!user.isSuccess()) {
+                throw new RuntimeException("Invalid token");
+            }
+            
+            // Map Supabase email to local User ID, create if doesn't exist
+            String email = user.getEmail();
+            String displayName = user.getDisplayName() != null ? user.getDisplayName() : email.split("@")[0];
+            
+            // Find or create local user
+            User localUser = userRepository.findByEmail(email)
+                    .orElseGet(() -> {
+                        // Create new user if doesn't exist
+                        User newUser = new User();
+                        newUser.setEmail(email);
+                        newUser.setPasswordHash("supabase_managed"); // Supabase handles password
+                        newUser.setDisplayName(displayName);
+                        return userRepository.save(newUser);
+                    });
+            
+            return localUser.getId();
+        } catch (Exception e) {
+            throw new RuntimeException("Authentication failed: " + e.getMessage(), e);
+        }
+    }
     
     // Authenticated endpoints (must come before public /{id} to avoid route conflict)
     
     // GET /api/trips/mine - Get user's trips
     @GetMapping("/mine")
     public ResponseEntity<List<TripResponse>> getMyTrips(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
         
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
+        Long userId = getUserIdFromToken(authorization);
         List<TripResponse> trips = tripService.getTripsByAuthor(userId);
         return ResponseEntity.ok(trips);
     }
@@ -58,27 +94,17 @@ public class TripController {
     // GET /api/trips/{id} - Get trip by ID (public)
     @GetMapping("/{id}")
     public ResponseEntity<TripResponse> getTripById(@PathVariable Long id) {
-        try {
-            TripResponse trip = tripService.getTripById(id);
-            return ResponseEntity.ok(trip);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        TripResponse trip = tripService.getTripById(id);
+        return ResponseEntity.ok(trip);
     }
     
     // POST /api/trips - Create new trip
     @PostMapping
     public ResponseEntity<TripResponse> createTrip(
             @Valid @RequestBody TripRequest request,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
         
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
+        Long userId = getUserIdFromToken(authorization);
         TripResponse trip = tripService.createTrip(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(trip);
     }
@@ -88,48 +114,22 @@ public class TripController {
     public ResponseEntity<TripResponse> updateTrip(
             @PathVariable Long id,
             @Valid @RequestBody TripRequest request,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
         
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
-        try {
-            TripResponse trip = tripService.updateTrip(id, request, userId);
-            return ResponseEntity.ok(trip);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
-            }
-            if (e.getMessage().contains("permission")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Long userId = getUserIdFromToken(authorization);
+        TripResponse trip = tripService.updateTrip(id, request, userId);
+        return ResponseEntity.ok(trip);
     }
     
     // DELETE /api/trips/{id} - Delete trip
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrip(
             @PathVariable Long id,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
         
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
-        try {
-            tripService.deleteTrip(id, userId);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
-            }
-            if (e.getMessage().contains("permission")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Long userId = getUserIdFromToken(authorization);
+        tripService.deleteTrip(id, userId);
+        return ResponseEntity.noContent().build();
     }
 }
 

@@ -12,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TripService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(TripService.class);
     
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
@@ -33,6 +37,11 @@ public class TripService {
     
     @Transactional
     public TripResponse createTrip(TripRequest request, Long authorId) {
+        // Verify authorId is not null
+        if (authorId == null) {
+            throw new RuntimeException("User ID is required");
+        }
+        
         // Verify user exists
         userRepository.findById(authorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -44,6 +53,7 @@ public class TripService {
         trip.setTags(request.getTags() != null ? request.getTags() : new ArrayList<>());
         trip.setLatitude(request.getLatitude());
         trip.setLongitude(request.getLongitude());
+        trip.setProvince(request.getProvince());
         trip.setAuthorId(authorId);
         
         Trip savedTrip = tripRepository.save(trip);
@@ -57,6 +67,8 @@ public class TripService {
         
         // Check ownership
         if (!trip.getAuthorId().equals(authorId)) {
+            logger.warn("Unauthorized update attempt: User {} tried to update trip {} owned by {}", 
+                       authorId, tripId, trip.getAuthorId());
             throw new RuntimeException("You don't have permission to edit this trip");
         }
         
@@ -70,6 +82,7 @@ public class TripService {
         }
         trip.setLatitude(request.getLatitude());
         trip.setLongitude(request.getLongitude());
+        trip.setProvince(request.getProvince());
         
         Trip updatedTrip = tripRepository.save(trip);
         return mapToResponse(updatedTrip);
@@ -82,6 +95,8 @@ public class TripService {
         
         // Check ownership
         if (!trip.getAuthorId().equals(authorId)) {
+            logger.warn("Unauthorized delete attempt: User {} tried to delete trip {} owned by {}", 
+                       authorId, tripId, trip.getAuthorId());
             throw new RuntimeException("You don't have permission to delete this trip");
         }
         
@@ -127,6 +142,25 @@ public class TripService {
         );
     }
     
+    public TripPageResponse getTripsByAuthor(Long authorId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Trip> tripPage = tripRepository.findByAuthorId(authorId, pageable);
+        
+        List<TripResponse> content = tripPage.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        
+        return new TripPageResponse(
+                content,
+                tripPage.getNumber(),
+                tripPage.getSize(),
+                tripPage.getTotalElements(),
+                tripPage.getTotalPages(),
+                tripPage.hasNext(),
+                tripPage.hasPrevious()
+        );
+    }
+    
     public TripResponse getTripById(Long id) {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
@@ -142,6 +176,7 @@ public class TripService {
         response.setTags(trip.getTags() != null ? trip.getTags() : new ArrayList<>());
         response.setLatitude(trip.getLatitude());
         response.setLongitude(trip.getLongitude());
+        response.setProvince(trip.getProvince());
         response.setAuthorId(trip.getAuthorId());
         response.setAuthorName(trip.getAuthor() != null ? trip.getAuthor().getDisplayName() : null);
         response.setCreatedAt(trip.getCreatedAt());

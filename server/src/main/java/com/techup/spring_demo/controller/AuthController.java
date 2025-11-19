@@ -80,13 +80,8 @@ public class AuthController {
             }
             
         } catch (RuntimeException e) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse(
-                            null,
-                            null,
-                            new LoginResponse.UserInfo(null, request.getEmail())
-                    ));
+            // Let GlobalExceptionHandler handle it to return error message
+            throw e;
         }
     }
 
@@ -124,30 +119,22 @@ public ResponseEntity<UserResponse> getCurrentUser(
         @RequestHeader(value = "Authorization", required = false) String authorization) {
     
     if (authorization == null || !authorization.startsWith("Bearer ")) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        throw new RuntimeException("Unauthorized: No token provided");
     }
     
-    try {
-        String token = authorization.substring(7); // Remove "Bearer " prefix
-        SupabaseAuthService.UserResult result = supabaseAuthService.getCurrentUser(token);
-        
-        if (result.isSuccess()) {
-            UserResponse response = new UserResponse(
-                    result.getId(),
-                    result.getEmail(),
-                    result.getDisplayName(),
-                    result.getCreatedAt()
-            );
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        
-    } catch (RuntimeException e) {
-        if (e.getMessage().contains("Invalid or expired token")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    String token = authorization.substring(7);
+    SupabaseAuthService.UserResult result = supabaseAuthService.getCurrentUser(token);
+    
+    if (result.isSuccess()) {
+        UserResponse response = new UserResponse(
+                result.getId(),
+                result.getEmail(),
+                result.getDisplayName(),
+                result.getCreatedAt()
+        );
+        return ResponseEntity.ok(response);
+    } else {
+        throw new RuntimeException("Failed to get user information");
     }
 }
 

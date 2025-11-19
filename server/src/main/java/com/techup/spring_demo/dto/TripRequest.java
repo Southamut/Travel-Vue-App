@@ -21,5 +21,7 @@ public class TripRequest {
     private Double latitude;
     
     private Double longitude;
+
+    private String province;
 }
 

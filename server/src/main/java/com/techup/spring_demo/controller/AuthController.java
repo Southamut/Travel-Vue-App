@@ -2,6 +2,7 @@ package com.techup.spring_demo.controller;
 
 import com.techup.spring_demo.dto.LoginRequest;
 import com.techup.spring_demo.dto.LoginResponse;
+import com.techup.spring_demo.dto.LogoutResponse;
 import com.techup.spring_demo.dto.RegisterRequest;
 import com.techup.spring_demo.dto.RegisterResponse;
 import com.techup.spring_demo.service.SupabaseAuthService;
@@ -87,4 +88,34 @@ public class AuthController {
                     ));
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<LogoutResponse> logout(
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new LogoutResponse("Authorization token required"));
+        }
+        
+        try {
+            String token = authorization.substring(7); // Remove "Bearer " prefix
+            SupabaseAuthService.LogoutResult result = supabaseAuthService.logout(token);
+            
+            if (result.isSuccess()) {
+                return ResponseEntity.ok(new LogoutResponse(result.getMessage()));
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(new LogoutResponse(result.getMessage()));
+            }
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new LogoutResponse(e.getMessage()));
+        }
+    }
+
 }

@@ -15,16 +15,16 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class SupabaseAuthService {
-    
+
     private final WebClient supabaseWebClient;
     private final SupabaseConfig supabaseConfig;
-    
+
     // Register Service
     public RegisterResult register(String email, String password) {
         RegisterRequest request = new RegisterRequest();
         request.setEmail(email);
         request.setPassword(password);
-        
+
         try {
             RegisterResponse response = supabaseWebClient
                     .post()
@@ -34,12 +34,12 @@ public class SupabaseAuthService {
                     .retrieve()
                     .bodyToMono(RegisterResponse.class)
                     .block();
-            
+
             if (response != null && response.getUser() != null) {
                 return new RegisterResult(true, "User registered successfully", response.getUser().getId(), email);
             }
             return new RegisterResult(false, "Registration failed", null, email);
-            
+
         } catch (WebClientResponseException e) {
             // Parse error response from Supabase
             String errorMessage = "Registration failed";
@@ -50,20 +50,20 @@ public class SupabaseAuthService {
             } else if (e.getStatusCode().is4xxClientError()) {
                 errorMessage = "Invalid email or password";
             }
-            
+
             throw new RuntimeException(errorMessage);
         } catch (Exception e) {
             throw new RuntimeException("Registration failed: " + e.getMessage());
         }
     }
-    
+
     // Login Service
     public LoginResult login(String email, String password) {
         LoginRequest request = new LoginRequest();
         request.setEmail(email);
         request.setPassword(password);
         request.setGrantType("password");
-        
+
         try {
             LoginResponse response = supabaseWebClient
                     .post()
@@ -73,7 +73,7 @@ public class SupabaseAuthService {
                     .retrieve()
                     .bodyToMono(LoginResponse.class)
                     .block();
-            
+
             if (response != null && response.getAccessToken() != null) {
                 return new LoginResult(
                         true,
@@ -81,29 +81,52 @@ public class SupabaseAuthService {
                         response.getAccessToken(),
                         response.getRefreshToken(),
                         response.getUser() != null ? response.getUser().getId() : null,
-                        response.getUser() != null ? response.getUser().getEmail() : email
-                );
+                        response.getUser() != null ? response.getUser().getEmail() : email);
             }
             return new LoginResult(false, "Login failed", null, null, null, email);
-            
+
         } catch (WebClientResponseException.Unauthorized e) {
             throw new RuntimeException("Invalid email or password");
         } catch (WebClientResponseException e) {
             String errorMessage = "Login failed";
             String responseBody = e.getResponseBodyAsString();
-            
+
             if (responseBody != null) {
-                if (responseBody.contains("Invalid login credentials") || 
-                    responseBody.contains("Invalid credentials")) {
+                if (responseBody.contains("Invalid login credentials") ||
+                        responseBody.contains("Invalid credentials")) {
                     errorMessage = "Invalid email or password";
                 } else if (responseBody.contains("Email not confirmed")) {
                     errorMessage = "Email not confirmed. Please check your email for confirmation link.";
                 }
             }
-            
+
             throw new RuntimeException(errorMessage);
         } catch (Exception e) {
             throw new RuntimeException("Login failed: " + e.getMessage());
+        }
+    }
+
+    // Logout Service
+    public LogoutResult logout(String accessToken) {
+        try {
+            String response = supabaseWebClient
+                    .post()
+                    .uri("/logout")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            return new LogoutResult(true, "Logged out successfully");
+
+        } catch (WebClientResponseException.Unauthorized e) {
+            throw new RuntimeException("Invalid or expired token");
+        } catch (WebClientResponseException e) {
+            // Even if Supabase returns an error, we can consider logout successful
+            // since the client will discard the token anyway
+            return new LogoutResult(true, "Logged out successfully");
+        } catch (Exception e) {
+            throw new RuntimeException("Logout failed: " + e.getMessage());
         }
     }
 
@@ -113,13 +136,13 @@ public class SupabaseAuthService {
         private String email;
         private String password;
     }
-    
+
     @Data
     private static class RegisterResponse {
         private User user;
         private String access_token;
         private String refresh_token;
-        
+
         @Data
         private static class User {
             private String id;
@@ -128,14 +151,14 @@ public class SupabaseAuthService {
             private String createdAt;
         }
     }
-    
+
     @Data
     public static class RegisterResult {
         private boolean success;
         private String message;
         private String userId;
         private String email;
-        
+
         public RegisterResult(boolean success, String message, String userId, String email) {
             this.success = success;
             this.message = message;
@@ -149,24 +172,24 @@ public class SupabaseAuthService {
     private static class LoginRequest {
         private String email;
         private String password;
-        
+
         @JsonProperty("grant_type")
         private String grantType;
     }
-    
+
     @Data
     private static class LoginResponse {
         @JsonProperty("access_token")
         private String accessToken;
-        
+
         @JsonProperty("refresh_token")
         private String refreshToken;
-        
+
         @JsonProperty("expires_in")
         private Long expiresIn;
-        
+
         private User user;
-        
+
         @Data
         private static class User {
             private String id;
@@ -186,15 +209,27 @@ public class SupabaseAuthService {
         private String refreshToken;
         private String userId;
         private String email;
-        
-        public LoginResult(boolean success, String message, String accessToken, 
-                          String refreshToken, String userId, String email) {
+
+        public LoginResult(boolean success, String message, String accessToken,
+                String refreshToken, String userId, String email) {
             this.success = success;
             this.message = message;
             this.accessToken = accessToken;
             this.refreshToken = refreshToken;
             this.userId = userId;
             this.email = email;
+        }
+    }
+
+    // Logout Request and Response
+    @Data
+    public static class LogoutResult {
+        private boolean success;
+        private String message;
+        
+        public LogoutResult(boolean success, String message) {
+            this.success = success;
+            this.message = message;
         }
     }
 }

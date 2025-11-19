@@ -16,11 +16,22 @@ import java.util.Optional;
 public interface TripRepository extends JpaRepository<Trip, Long> {
     List<Trip> findByAuthorId(Long authorId);
     
-    // Search trips by title or description (case-insensitive) with author
-    @Query("SELECT t FROM Trip t WHERE " +
+    // Native query to search trips by title, description, and tags using UNNEST
+    // Note: EntityGraph cannot be used with native queries
+    @Query(value = "SELECT DISTINCT t.* FROM trips t " +
+           "LEFT JOIN LATERAL UNNEST(t.tags) AS tag ON true " +
+           "WHERE " +
            "LOWER(t.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%'))")
-    @EntityGraph(attributePaths = {"author"})
+           "LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(tag) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "ORDER BY t.created_at DESC",
+           countQuery = "SELECT COUNT(DISTINCT t.id) FROM trips t " +
+                       "LEFT JOIN LATERAL UNNEST(t.tags) AS tag ON true " +
+                       "WHERE " +
+                       "LOWER(t.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                       "LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                       "LOWER(tag) LIKE LOWER(CONCAT('%', :query, '%'))",
+           nativeQuery = true)
     Page<Trip> searchTrips(@Param("query") String query, Pageable pageable);
     
     // Get all trips with pagination and author

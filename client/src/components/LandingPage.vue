@@ -18,6 +18,9 @@ const toDisplay = ref([]);
 // For Tag Search
 const selectedTags = ref([]);
 
+//For loading state
+const isLoading = ref(false); // เริ่มต้นเป็น false
+
 // --- Methods and Handlers ---
 
 //Handle input change
@@ -25,26 +28,48 @@ const handleChange = (e: any) => {
     keywords.value = e.target.value;
 }
 
-//Get data
+//Get data and pagination
+const currentPage = ref(0);     // หมายเลขหน้าปัจจุบัน (เริ่มที่ 0)
+const totalPages = ref(1);      // จำนวนหน้ารวมทั้งหมด
+const itemsPerPage = ref(10);   // จำนวนรายการต่อหน้า (size)
+
+// ฟังก์ชันสำหรับเปลี่ยนหน้า
+const goToPage = (pageNumber: number) => {
+    // ป้องกันการเปลี่ยนหน้าเกินขอบเขต
+    if (pageNumber >= 0 && pageNumber < totalPages.value) {
+        currentPage.value = pageNumber;
+        getData(); // เรียก API เพื่อดึงข้อมูลหน้าใหม่
+    }
+};
+
 const getData = async () => {
+
+    //set loading state
+    isLoading.value = true;
+
     try {
-        // 1. เปลี่ยนชื่อพารามิเตอร์จาก keywords เป็น query
-        // 2. เพิ่ม pagination parameters (page=0, size=10)
         const response = await axios.get(
-            `${API_BASE}/trips?page=0&size=10&query=${keywords.value}`
+            // ส่ง page และ size เข้าไป
+            `${API_BASE}/trips?page=${currentPage.value}&size=${itemsPerPage.value}&query=${keywords.value}`
         );
 
-        // 3. ปรับการเข้าถึงข้อมูล: 
+        // อัปเดต State Pagination จาก Response
         toDisplay.value = response.data.content;
+        totalPages.value = response.data.totalPages; // ต้องตรงกับชื่อใน TripPageResponse
+        currentPage.value = response.data.number;    // หมายเลขหน้าที่ Spring Boot ส่งกลับมา
 
-        console.log("Data loaded:", response.data);
     } catch (error) {
         console.error("Error fetching trip data:", error);
+    } finally {
+        //unset loading state
+        isLoading.value = false;
     }
 }
 
 //tag selection handler
-const handleTagClick = (tag) => {
+const handleTagClick = (tag:string) => {
+    // รีเซ็ตหน้าเป็น 0 เมื่อมีการคลิก Tag เพื่อเริ่มค้นหาใหม่
+    currentPage.value = 0;
     // ป้องกัน tag ซ้ำ
     if (!selectedTags.value.includes(tag)) {
         // เพิ่ม tag ใหม่
@@ -91,8 +116,24 @@ onMounted(() => {
                     @input="handleChange" :value="keywords" />
             </div>
 
-            <!-- trip cards -->
-            <TripCards class="mt-16" :toDisplay="toDisplay" @tag-clicked="handleTagClick" />
+            <!-- show loading -->
+            <div v-if="isLoading" class="flex justify-center items-center mt-20 min-h-[30vh]">
+                <span class="loading loading-dots loading-xl text-[#4A70A9]"></span>
+            </div>
+            <div v-else>
+                <!-- trip cards -->
+                <TripCards class="mt-16" :toDisplay="toDisplay" @tag-clicked="handleTagClick" />
+                <div class="pb-10">
+                    <div class="flex justify-center">
+                        <div class="join shadow-md">
+                            <button v-for="page in totalPages" :key="page" class="join-item btn"
+                                :class="{ 'btn-primary': currentPage === page - 1 }" @click="goToPage(page - 1)">
+                                {{ page }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>

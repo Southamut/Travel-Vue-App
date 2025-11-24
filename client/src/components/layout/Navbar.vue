@@ -1,11 +1,13 @@
 <script setup>
-import { User, PlaneTakeoff, LogOut } from 'lucide-vue-next';
+import { User, PlaneTakeoff, LogOut, Handbag } from 'lucide-vue-next';
 </script>
 
 <template>
-    <div class="navbar bg-white dark:bg-gray-900 shadow-sm">
+    <div class="navbar bg-[#B6AE9F] dark:bg-[#393E46] shadow-sm">
         <div class="flex-1">
-            <a class="btn btn-ghost text-xl">Travel App</a>
+            <a class="btn btn-ghost font-bold text-[#393E46] dark:text-[#DFD0B8] text-xl">
+                <Handbag />
+                Travel App</a>
         </div>
         <div class="flex gap-2">
             <div class="dropdown dropdown-end">
@@ -16,7 +18,7 @@ import { User, PlaneTakeoff, LogOut } from 'lucide-vue-next';
                     </div>
                 </div>
                 <ul tabIndex="-1"
-                    class="menu menu-sm dropdown-content bg-white dark:bg-gray-700 rounded-box z-1 mt-3 w-52 p-2 shadow text-gray-600 dark:text-gray-300 font-medium">
+                    class="menu menu-sm dropdown-content bg-white dark:bg-[#393E46] rounded-box z-1 mt-3 w-52 p-2 shadow text-gray-600 dark:text-[#DFD0B8] font-medium">
                     <li>
                         <a class="text-lg">
                             <User class="h-5 w-5" />

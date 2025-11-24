@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Navbar from './layout/Navbar.vue';
+
 import { ref } from 'vue';
 
 //for search box
@@ -11,19 +13,20 @@ const handleChange = (e: any) => {
 </script>
 
 <template>
+    <Navbar />
     <!-- window box -->
-    <div className="bg-white w-full font-prompt">
+    <div class="bg-white dark:bg-gray-800 w-full h-screen font-prompt">
         <!-- title -->
-        <div className="flex flex-col items-center justify-center mt-15">
-            <h1 className="text-5xl font-medium text-blue-400">เที่ยวไหนดี</h1>
+        <div class="flex flex-col items-center justify-center pt-15">
+            <h1 class="text-5xl font-medium text-blue-400">เที่ยวไหนดี</h1>
         </div>
 
         <!-- search box  -->
-        <div className="flex flex-col items-center justify-center mt-10 mb-5">
+        <div class="flex flex-col items-center justify-center mt-10 mb-5">
             <label htmlFor="search"
-                className="text-sm xl:text-xl font-medium text-gray-500 w-9/12 text-left">หาที่เที่ยวแล้วไปกัน</label>
+                class="text-sm xl:text-xl font-medium text-gray-500 dark:text-gray-300 w-9/12 text-left">หาที่เที่ยวแล้วไปกัน</label>
             <input type="text" placeholder="หาที่เที่ยวแล้วไปกัน..."
-                className="w-9/12 p-2 text-center text-sm xl:text-xl border-b border-gray-300" @input="handleChange"
+                class="w-9/12 p-2 text-center text-sm xl:text-xl border-b border-gray-300 dark:text-gray-300" @input="handleChange"
                 :value="keywords" />
         </div>
     </div>

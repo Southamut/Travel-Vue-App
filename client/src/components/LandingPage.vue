@@ -2,7 +2,7 @@
 import Navbar from './layout/Navbar.vue';
 import TripCards from './layout/TripCards.vue';
 
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
@@ -38,7 +38,6 @@ const goToPage = (pageNumber: number) => {
     // ป้องกันการเปลี่ยนหน้าเกินขอบเขต
     if (pageNumber >= 0 && pageNumber < totalPages.value) {
         currentPage.value = pageNumber;
-        getData(); // เรียก API เพื่อดึงข้อมูลหน้าใหม่
     }
 };
 
@@ -47,19 +46,27 @@ const getData = async () => {
     //set loading state
     isLoading.value = true;
 
+    // ถ้า currentPage.value เป็น null หรือ undefined จะใช้ 0 แทน
+    const safePage = currentPage.value ?? 0;
+
+
+    // ตรวจสอบว่า query ไม่ใช่ null/undefined ก่อนส่ง
+    const safeQuery = keywords.value ?? '';
+
     try {
         const response = await axios.get(
             // ส่ง page และ size เข้าไป
-            `${API_BASE}/trips?page=${currentPage.value}&size=${itemsPerPage.value}&query=${keywords.value}`
+            `${API_BASE}/trips?page=${safePage}&size=${itemsPerPage.value}&query=${safeQuery}`
         );
 
         // อัปเดต State Pagination จาก Response
         toDisplay.value = response.data.content;
         totalPages.value = response.data.totalPages; // ต้องตรงกับชื่อใน TripPageResponse
-        currentPage.value = response.data.number;    // หมายเลขหน้าที่ Spring Boot ส่งกลับมา
 
     } catch (error) {
         console.error("Error fetching trip data:", error);
+        // เราควรเคลียร์ toDisplay ให้เป็น [] ด้วย เพื่อแสดง "No trips found"
+        toDisplay.value = [];
     } finally {
         //unset loading state
         isLoading.value = false;
@@ -70,7 +77,7 @@ const getData = async () => {
 const handleTagClick = (tag: string) => {
     // รีเซ็ตหน้าเป็น 0 เมื่อมีการคลิก Tag เพื่อเริ่มค้นหาใหม่
     currentPage.value = 0;
-    
+
     const index = selectedTags.value.indexOf(tag);
     if (index > -1) {
         // ถ้า Tag มีอยู่แล้ว ให้ลบออก
@@ -82,20 +89,15 @@ const handleTagClick = (tag: string) => {
 
     // อัปเดต Keywords เสมอ (ทำให้ Watcher ทำงาน)
     const newSearchText = selectedTags.value.join(" ");
-    keywords.value = newSearchText.trim(); 
+    keywords.value = newSearchText.trim();
 };
 
 // --- Lifecycle Hooks and Watchers ---
 
 // Watcher: เมื่อ keywords เปลี่ยนแปลง ให้เรียก getData() เพื่อค้นหาใหม่
-watch(keywords, () => {
+watch([keywords, currentPage], () => {
     getData();
-});
-
-// เมื่อ Component ถูกสร้างเสร็จ ให้โหลดข้อมูลครั้งแรก
-onMounted(() => {
-    getData();
-});
+}, { immediate: true }); // เรียกครั้งแรก (initial load)
 
 
 </script>
@@ -125,16 +127,23 @@ onMounted(() => {
             </div>
             <div v-else>
                 <!-- trip cards -->
-                <TripCards class="mt-16" :toDisplay="toDisplay" @tag-clicked="handleTagClick" />
-                <div class="pb-10">
-                    <div class="flex justify-center">
-                        <div class="join shadow-md">
-                            <button v-for="page in totalPages" :key="page" class="join-item btn"
-                                :class="{ 'btn-primary': currentPage === page - 1 }" @click="goToPage(page - 1)">
-                                {{ page }}
-                            </button>
+                <div v-if="toDisplay.length > 0">
+                    <TripCards class="mt-16" :toDisplay="toDisplay" @tag-clicked="handleTagClick" />
+                    <div class="pb-10">
+                        <div class="flex justify-center">
+                            <div class="join shadow-md">
+                                <button v-for="page in totalPages" :key="page" class="join-item btn"
+                                    :class="{ 'btn-primary': currentPage === page - 1 }" @click="goToPage(page - 1)">
+                                    {{ page }}
+                                </button>
+                            </div>
                         </div>
                     </div>
+                </div>
+                <div v-else class="flex justify-center items-center mt-20 min-h-[30vh]">
+                    <p class="text-xl text-gray-600 dark:text-[#DFD0B8]">
+                        “No trips found. Try a different keyword.”
+                    </p>
                 </div>
             </div>
         </div>

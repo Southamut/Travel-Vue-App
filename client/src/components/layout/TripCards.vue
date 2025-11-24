@@ -1,42 +1,104 @@
 <script setup>
 import { Link } from 'lucide-vue-next';
+import { defineProps, defineEmits } from 'vue';
+
+// ----------------------------------------------------
+// 1. Component ย่อย: LinkButton (สำหรับปุ่มคัดลอกลิงก์)
+// ----------------------------------------------------
+
+
+// Function for copy link
+const copyToClipboard = async (text) => {
+    try {
+        await navigator.clipboard.writeText(text);
+        alert('Link copied to clipboard!');
+    } catch (error) {
+        alert('Failed to copy link');
+    }
+};
+
+// ----------------------------------------------------
+// 2. Component ย่อย: Tag (สำหรับป้ายหมวดหมู่)
+// ----------------------------------------------------
+
+const Tag = {
+    props: {
+        tag: {
+            type: String,
+            required: true
+        }
+    },
+    // ใน Vue Component ย่อย ถ้าจะใช้ emit ต้องประกาศ
+    emits: ['tag-clicked'],
+    setup(props, { emit }) {
+        const handleTagClick = () => {
+            // ใช้ emit เพื่อส่ง event ไปให้ component แม่ (TripSuggestList -> HomePage)
+            emit('tag-clicked', props.tag);
+        };
+        return { handleTagClick };
+    },
+}
+
+// ----------------------------------------------------
+// 3. Component หลัก: TripSuggestList
+// ----------------------------------------------------
+
+// Prop Declaration (แทน props ใน React)
+defineProps({
+    toDisplay: {
+        type: Array,
+        required: true
+    }
+});
+
+// Event Declaration (แทน onTagClick ใน React)
+const emit = defineEmits(['tag-clicked']);
+
+// Handler สำหรับส่ง Tag ที่ถูกคลิกขึ้นไปให้ Component แม่
+const handleTagClick = (tag) => {
+    emit('tag-clicked', tag);
+}
 </script>
 
 <template>
-    <div class="card sm:card-side bg-[#DEDED1] dark:bg-gray-900 mx-10">
-        <figure class="sm:w-80 aspect-4/3 p-6">
-            <img src="https://img.daisyui.com/images/stock/photo-1635805737707-575885ab0820.webp" alt="Movie"
-                className="w-full h-full object-cover rounded-xl" />
-        </figure>
-        <div class="card-body gap-4">
-            <h2 class="card-title text-md md:text-lg lg:text-xl xl:text-2xl font-bold text-gray-800 dark:text-[#DEDED1]">Example Trip</h2>
-            <p class="text-xs md:text-sm lg:text-md font-medium text-gray-500 dark:text-[#DFD0B8]">Description Trips</p>
-            <ul class="flex flex-row gap-2 mb-4">
-                <li class="badge badge-outline">
-                    tag
-                </li>
-                <li class="badge badge-outline">
-                    tag
-                </li>
-            </ul>
-            <div class="card-actions justify-between items-end">
-                <div class="grid grid-cols-3 gap-2">
-                    <div class="col-span-1 aspect-square w-12 sm:w-16 lg:w-20"><img
-                            src="https://img.daisyui.com/images/stock/photo-1635805737707-575885ab0820.webp" alt="Movie"
-                            className="w-full h-full object-cover rounded-xl" />
+    <div v-for="item in toDisplay" :key="item.eid" class="mb-8">
+        <div class="card sm:card-side bg-[#DEDED1] dark:bg-gray-900 mx-10">
+            <figure class="sm:w-80 aspect-4/3 p-6">
+                <img :src="item.photos[0]" alt="trip-image" className="w-full h-full object-cover rounded-xl" />
+            </figure>
+            <div class="card-body gap-4">
+                <h2
+                    class="card-title text-md md:text-lg lg:text-xl xl:text-2xl font-bold text-gray-800 dark:text-[#DEDED1]">
+                    Example Trip</h2>
+                <p class="text-xs md:text-sm lg:text-md font-medium text-gray-500 dark:text-[#DFD0B8]">
+                    {{ item.description.length > 100 ? item.description.slice(0, 100) + "..." : item.description }}
+                </p>
+                <a :href="item.url" class="text-xs md:text-sm lg:text-md font-medium text-[#4A70A9] underline">อ่านต่อ
+                </a>
+                <ul class="flex flex-row gap-2 mb-4">
+                    <template v-for="(tag, index) in item.tags" :key="index">
+                        <li class="badge badge-outline">
+                            <Tag :tag="tag" @tag-clicked="handleTagClick" />
+                        </li>
+                    </template>
+                </ul>
+                <div class="card-actions justify-between items-end">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-1 aspect-square w-12 sm:w-16 lg:w-20"><img :src="item.photos[1]"
+                                alt="sample-image-1" className="w-full h-full object-cover rounded-xl" />
+                        </div>
+                        <div class="col-span-1 aspect-square w-12 sm:w-16 lg:w-20"><img :src="item.photos[2]"
+                                alt="sample-image-2" className="w-full h-full object-cover rounded-xl" />
+                        </div>
+                        <div class="col-span-1 aspect-square w-12 sm:w-16 lg:w-20"><img :src="item.photos[3]"
+                                alt="sample-image-3" className="w-full h-full object-cover rounded-xl" />
+                        </div>
                     </div>
-                    <div class="col-span-1 aspect-square w-12 sm:w-16 lg:w-20"><img
-                            src="https://img.daisyui.com/images/stock/photo-1635805737707-575885ab0820.webp" alt="Movie"
-                            className="w-full h-full object-cover rounded-xl" />
-                    </div>
-                    <div class="col-span-1 aspect-square w-12 sm:w-16 lg:w-20"><img
-                            src="https://img.daisyui.com/images/stock/photo-1635805737707-575885ab0820.webp" alt="Movie"
-                            className="w-full h-full object-cover rounded-xl" />
-                    </div>
+                    <button @click="copyToClipboard(item.url)"
+                        class="btn btn-ghost border-2 border-[#4A70A9] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16">
+                        <Link class="text-[#4A70A9]" />
+                    </button>
                 </div>
-                <button class="btn btn-ghost border-2 border-[#4A70A9] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16">
-                    <Link class="text-[#4A70A9]" />
-                </button>
             </div>
         </div>
     </div>

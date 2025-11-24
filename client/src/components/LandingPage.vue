@@ -67,19 +67,22 @@ const getData = async () => {
 }
 
 //tag selection handler
-const handleTagClick = (tag:string) => {
+const handleTagClick = (tag: string) => {
     // รีเซ็ตหน้าเป็น 0 เมื่อมีการคลิก Tag เพื่อเริ่มค้นหาใหม่
     currentPage.value = 0;
-    // ป้องกัน tag ซ้ำ
-    if (!selectedTags.value.includes(tag)) {
-        // เพิ่ม tag ใหม่
+    
+    const index = selectedTags.value.indexOf(tag);
+    if (index > -1) {
+        // ถ้า Tag มีอยู่แล้ว ให้ลบออก
+        selectedTags.value.splice(index, 1);
+    } else {
+        // ถ้า Tag ยังไม่มี ให้เพิ่มเข้าไป
         selectedTags.value.push(tag);
-
-        // นำ tag ทั้งหมดมารวมกันแล้วใส่ในช่องค้นหา (เหมือนกับการพิมพ์)
-        const newSearchText = selectedTags.value.join(" ");
-        // เพิ่มช่องว่างท้ายสุดเพื่อให้ผู้ใช้พิมพ์ต่อได้ง่าย
-        keywords.value = newSearchText + " ";
     }
+
+    // อัปเดต Keywords เสมอ (ทำให้ Watcher ทำงาน)
+    const newSearchText = selectedTags.value.join(" ");
+    keywords.value = newSearchText.trim(); 
 };
 
 // --- Lifecycle Hooks and Watchers ---
@@ -109,9 +112,9 @@ onMounted(() => {
 
             <!-- search box  -->
             <div class="flex flex-col items-center justify-center mt-10 mb-5">
-                <label htmlFor="search"
+                <label for="search"
                     class="text-sm lg:text-md xl:text-xl font-medium text-gray-500 dark:text-[#DFD0B8] w-9/12 text-left">หาที่เที่ยวแล้วไปกัน</label>
-                <input type="text" placeholder="หาที่เที่ยวแล้วไปกัน..."
+                <input type="text" placeholder="หาที่เที่ยวแล้วไปกัน..." id="search"
                     class="w-9/12 p-2 text-center text-sm xl:text-xl border-b border-gray-300 dark:text-[#DFD0B8]"
                     @input="handleChange" :value="keywords" />
             </div>

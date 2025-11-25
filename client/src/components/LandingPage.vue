@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Navbar from './layout/Navbar.vue';
 import TripCards from './layout/TripCards.vue';
+import { X } from 'lucide-vue-next';
 
 import { ref, watch } from 'vue';
 import axios from 'axios';
@@ -25,8 +26,10 @@ const isLoading = ref(false); // เริ่มต้นเป็น false
 
 //Handle input change
 const handleChange = (e: any) => {
-    keywords.value = e.target.value;
-}
+    currentPage.value = 0;
+    keywords.value = e.target.value.trim();
+    getData();
+};
 
 //Get data and pagination
 const currentPage = ref(0);     // หมายเลขหน้าปัจจุบัน (เริ่มที่ 0)
@@ -42,42 +45,33 @@ const goToPage = (pageNumber: number) => {
 };
 
 const getData = async () => {
-
-    //set loading state
     isLoading.value = true;
-
-    // ถ้า currentPage.value เป็น null หรือ undefined จะใช้ 0 แทน
     const safePage = currentPage.value ?? 0;
 
-
-    // ตรวจสอบว่า query ไม่ใช่ null/undefined ก่อนส่ง
-    const safeQuery = keywords.value ?? '';
-
     try {
-        const response = await axios.get(
-            // ส่ง page และ size เข้าไป
-            `${API_BASE}/trips?page=${safePage}&size=${itemsPerPage.value}&query=${safeQuery}`
-        );
+        const response = await axios.get(`${API_BASE}/trips`, {
+            params: {
+                page: safePage,
+                size: itemsPerPage.value,
+                query: keywords.value || null,
+                tags: selectedTags.value.length ? selectedTags.value : null,
+            }
+        });
 
-        // อัปเดต State Pagination จาก Response
         toDisplay.value = response.data.content;
-        totalPages.value = response.data.totalPages; // ต้องตรงกับชื่อใน TripPageResponse
+        totalPages.value = response.data.totalPages;
 
     } catch (error) {
         console.error("Error fetching trip data:", error);
-        // เราควรเคลียร์ toDisplay ให้เป็น [] ด้วย เพื่อแสดง "No trips found"
         toDisplay.value = [];
     } finally {
-        //unset loading state
         isLoading.value = false;
     }
 }
 
+
 //tag selection handler
 const handleTagClick = (tag: string) => {
-    // รีเซ็ตหน้าเป็น 0 เมื่อมีการคลิก Tag เพื่อเริ่มค้นหาใหม่
-    currentPage.value = 0;
-
     const index = selectedTags.value.indexOf(tag);
     if (index > -1) {
         // ถ้า Tag มีอยู่แล้ว ให้ลบออก
@@ -86,11 +80,19 @@ const handleTagClick = (tag: string) => {
         // ถ้า Tag ยังไม่มี ให้เพิ่มเข้าไป
         selectedTags.value.push(tag);
     }
-
-    // อัปเดต Keywords เสมอ (ทำให้ Watcher ทำงาน)
-    const newSearchText = selectedTags.value.join(" ");
-    keywords.value = newSearchText.trim();
+    currentPage.value = 0;
+    // getData จะ combine keywords + selectedTags เอง
+    getData();
 };
+
+//remove tag from selectedTags
+const removeTag = (tag: string) => {
+    const index = selectedTags.value.indexOf(tag);
+    if (index > -1) selectedTags.value.splice(index, 1);
+    currentPage.value = 0;
+    getData();
+};
+
 
 // --- Lifecycle Hooks and Watchers ---
 
@@ -119,6 +121,14 @@ watch([keywords, currentPage], () => {
                 <input type="text" placeholder="หาที่เที่ยวแล้วไปกัน..." id="search"
                     class="w-9/12 p-2 text-center text-sm xl:text-xl border-b border-gray-300 dark:text-[#DFD0B8]"
                     @input="handleChange" :value="keywords" />
+                <!-- selected tags -->
+                <div class="flex flex-wrap justify-center gap-2 mt-4">
+                    <span v-for="tag in selectedTags" :key="tag"
+                        class="badge badge-outline text-lg text-gray-500 dark:text-[#DEDED1]">
+                        {{ tag }}
+                        <button @click="removeTag(tag)" class="text-gray-500 dark:text-[#DEDED1] font-medium"><X class="h-4 w-4"/></button>
+                    </span>
+                </div>
             </div>
 
             <!-- show loading -->

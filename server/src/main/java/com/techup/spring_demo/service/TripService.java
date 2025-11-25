@@ -22,30 +22,30 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TripService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TripService.class);
-    
+
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
-    
+
     public List<TripResponse> getTripsByAuthor(Long authorId) {
         List<Trip> trips = tripRepository.findByAuthorId(authorId);
         return trips.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-    
+
     @Transactional
     public TripResponse createTrip(TripRequest request, Long authorId) {
         // Verify authorId is not null
         if (authorId == null) {
             throw new RuntimeException("User ID is required");
         }
-        
+
         // Verify user exists
         userRepository.findById(authorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         Trip trip = new Trip();
         trip.setTitle(request.getTitle());
         trip.setDescription(request.getDescription());
@@ -55,23 +55,23 @@ public class TripService {
         trip.setLongitude(request.getLongitude());
         trip.setProvince(request.getProvince());
         trip.setAuthorId(authorId);
-        
+
         Trip savedTrip = tripRepository.save(trip);
         return mapToResponse(savedTrip);
     }
-    
+
     @Transactional
     public TripResponse updateTrip(Long tripId, TripRequest request, Long authorId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
-        
+
         // Check ownership
         if (!trip.getAuthorId().equals(authorId)) {
-            logger.warn("Unauthorized update attempt: User {} tried to update trip {} owned by {}", 
-                       authorId, tripId, trip.getAuthorId());
+            logger.warn("Unauthorized update attempt: User {} tried to update trip {} owned by {}",
+                    authorId, tripId, trip.getAuthorId());
             throw new RuntimeException("You don't have permission to edit this trip");
         }
-        
+
         trip.setTitle(request.getTitle());
         trip.setDescription(request.getDescription());
         if (request.getPhotos() != null) {
@@ -83,35 +83,35 @@ public class TripService {
         trip.setLatitude(request.getLatitude());
         trip.setLongitude(request.getLongitude());
         trip.setProvince(request.getProvince());
-        
+
         Trip updatedTrip = tripRepository.save(trip);
         return mapToResponse(updatedTrip);
     }
-    
+
     @Transactional
     public void deleteTrip(Long tripId, Long authorId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
-        
+
         // Check ownership
         if (!trip.getAuthorId().equals(authorId)) {
-            logger.warn("Unauthorized delete attempt: User {} tried to delete trip {} owned by {}", 
-                       authorId, tripId, trip.getAuthorId());
+            logger.warn("Unauthorized delete attempt: User {} tried to delete trip {} owned by {}",
+                    authorId, tripId, trip.getAuthorId());
             throw new RuntimeException("You don't have permission to delete this trip");
         }
-        
+
         tripRepository.delete(trip);
     }
-    
+
     // Public API methods
     public TripPageResponse getAllTrips(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Trip> tripPage = tripRepository.findAll(pageable);
-        
+
         List<TripResponse> content = tripPage.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
-        
+
         return new TripPageResponse(
                 content,
                 tripPage.getNumber(),
@@ -119,18 +119,21 @@ public class TripService {
                 tripPage.getTotalElements(),
                 tripPage.getTotalPages(),
                 tripPage.hasNext(),
-                tripPage.hasPrevious()
-        );
+                tripPage.hasPrevious());
     }
-    
-    public TripPageResponse searchTrips(String query, int page, int size) {
+
+    public TripPageResponse searchTrips(String query, List<String> tags, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Trip> tripPage = tripRepository.searchTrips(query, pageable);
-        
+
+        String cleanedQuery = (query != null && !query.isBlank()) ? query : null;
+        String[] tagArray = (tags != null && !tags.isEmpty()) ? tags.toArray(new String[0]) : new String[0];
+
+        Page<Trip> tripPage = tripRepository.searchTrips(cleanedQuery, tagArray, pageable);
+
         List<TripResponse> content = tripPage.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
-        
+
         return new TripPageResponse(
                 content,
                 tripPage.getNumber(),
@@ -138,18 +141,17 @@ public class TripService {
                 tripPage.getTotalElements(),
                 tripPage.getTotalPages(),
                 tripPage.hasNext(),
-                tripPage.hasPrevious()
-        );
+                tripPage.hasPrevious());
     }
-    
+
     public TripPageResponse getTripsByAuthor(Long authorId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Trip> tripPage = tripRepository.findByAuthorId(authorId, pageable);
-        
+
         List<TripResponse> content = tripPage.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
-        
+
         return new TripPageResponse(
                 content,
                 tripPage.getNumber(),
@@ -157,16 +159,15 @@ public class TripService {
                 tripPage.getTotalElements(),
                 tripPage.getTotalPages(),
                 tripPage.hasNext(),
-                tripPage.hasPrevious()
-        );
+                tripPage.hasPrevious());
     }
-    
+
     public TripResponse getTripById(Long id) {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
         return mapToResponse(trip);
     }
-    
+
     private TripResponse mapToResponse(Trip trip) {
         TripResponse response = new TripResponse();
         response.setId(trip.getId());
@@ -184,4 +185,3 @@ public class TripService {
         return response;
     }
 }
-

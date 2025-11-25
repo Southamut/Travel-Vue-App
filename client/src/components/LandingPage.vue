@@ -34,7 +34,7 @@ const handleChange = (e: any) => {
 //Get data and pagination
 const currentPage = ref(0);     // หมายเลขหน้าปัจจุบัน (เริ่มที่ 0)
 const totalPages = ref(1);      // จำนวนหน้ารวมทั้งหมด
-const itemsPerPage = ref(10);   // จำนวนรายการต่อหน้า (size)
+const itemsPerPage = ref(9);   // จำนวนรายการต่อหน้า (size)
 
 // ฟังก์ชันสำหรับเปลี่ยนหน้า
 const goToPage = (pageNumber: number) => {
@@ -139,7 +139,7 @@ watch([keywords, currentPage], () => {
                 <!-- trip cards -->
                 <div v-if="toDisplay.length > 0">
                     <TripCards class="mt-16" :toDisplay="toDisplay" @tag-clicked="handleTagClick" />
-                    <div class="pb-10">
+                    <div class="py-10">
                         <div class="flex justify-center">
                             <div class="join shadow-md">
                                 <button v-for="page in totalPages" :key="page" class="join-item btn"

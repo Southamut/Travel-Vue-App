@@ -66,23 +66,22 @@ const goToTripDetail = (eid: string) => {
 </script>
 
 <template>
-    <div class="trip-cards-container">
-        <div v-for="item in toDisplay" :key="item.eid" class="mb-8">
-            <div @click="goToTripDetail(item.eid)" class="card sm:card-side bg-[#DEDED1] dark:bg-base-100 mx-10
+    <div class="trip-cards-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-6">
+        <div v-for="item in toDisplay" :key="item.eid">
+            <div @click="goToTripDetail(item.eid)" class="card h-full rounded-2xl! bg-[#DEDED1] dark:bg-base-100
             transition-transform transform hover:-translate-y-2 hover:scale-105
             hover:shadow-xl duration-300 cursor-pointer">
                 <figure
-                    class="sm:w-80 aspect-4/3 p-6 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden">
+                    class="aspect-video p-2 overflow-hidden relative">
                     <template v-if="item.photos[0]">
                         <img :src="item.photos[0]" alt="trip-image"
-                            class="w-full h-full object-cover rounded-xl transition-transform duration-300 transform hover:scale-105"
+                            class="w-full h-full rounded-xl object-cover transition-transform duration-300 transform hover:scale-105"
                             @error="item.photos[0] = null" />
                     </template>
                     <template v-else>
                         <ImageOff class="w-16 h-16 text-gray-400 dark:text-gray-300" />
                     </template>
                 </figure>
-
 
                 <div class="card-body gap-4">
                     <h2 class="card-title text-md md:text-lg lg:text-xl xl:text-2xl font-bold text-gray-800 dark:text-[#DEDED1]"

@@ -3,7 +3,7 @@ import { User, PlaneTakeoff, LogOut, Handbag } from 'lucide-vue-next';
 </script>
 
 <template>
-    <div class="navbar bg-[#B6AE9F] dark:bg-[#393E46] shadow-sm">
+    <div class="navbar bg-[#DEDED1] dark:bg-[#393E46] shadow-sm">
         <div class="flex-1">
             <a class="btn btn-ghost font-bold text-[#393E46] dark:text-[#DFD0B8] text-xl">
                 <Handbag />

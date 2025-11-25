@@ -15,31 +15,31 @@ import java.util.Optional;
 @Repository
 public interface TripRepository extends JpaRepository<Trip, Long> {
     List<Trip> findByAuthorId(Long authorId);
-    
-    // Native query to search trips by title, description, and tags using UNNEST
-    // Note: EntityGraph cannot be used with native queries
-    @Query(value = "SELECT DISTINCT t.* FROM trips t " +
-           "LEFT JOIN LATERAL UNNEST(t.tags) AS tag ON true " +
-           "WHERE " +
-           "LOWER(t.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(tag) LIKE LOWER(CONCAT('%', :query, '%')) " +
-           "ORDER BY t.created_at DESC",
-           countQuery = "SELECT COUNT(DISTINCT t.id) FROM trips t " +
-                       "LEFT JOIN LATERAL UNNEST(t.tags) AS tag ON true " +
-                       "WHERE " +
-                       "LOWER(t.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-                       "LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-                       "LOWER(tag) LIKE LOWER(CONCAT('%', :query, '%'))",
-           nativeQuery = true)
-    Page<Trip> searchTrips(@Param("query") String query, Pageable pageable);
-    
+
+    @Query(value = "SELECT * FROM trips t " +
+            "WHERE " +
+            "(:query IS NULL OR :query = '' OR " +
+            "LOWER(t.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+            "AND (array_length(:tags, 1) = 0 OR t.tags @> (:tags)::text[])\r\n" + //
+            " " +
+            "ORDER BY t.created_at DESC", countQuery = "SELECT COUNT(*) FROM trips t " +
+                    "WHERE " +
+                    "(:query IS NULL OR :query = '' OR " +
+                    "LOWER(t.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+                    "AND (array_length(:tags, 1) = 0 OR t.tags @> (:tags)::text[])\r\n" + //
+                    "", nativeQuery = true)
+    Page<Trip> searchTrips(
+            @Param("query") String query,
+            @Param("tags") String[] tags,
+            Pageable pageable);
+
     // Get all trips with pagination and author
-    @EntityGraph(attributePaths = {"author"})
+    @EntityGraph(attributePaths = { "author" })
     Page<Trip> findByAuthorId(Long authorId, Pageable pageable);
-    
+
     // Get trip by ID with author
-    @EntityGraph(attributePaths = {"author"})
+    @EntityGraph(attributePaths = { "author" })
     Optional<Trip> findById(Long id);
 }
-

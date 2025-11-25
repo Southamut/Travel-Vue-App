@@ -45,34 +45,30 @@ const goToPage = (pageNumber: number) => {
 };
 
 const getData = async () => {
-
-    //set loading state
     isLoading.value = true;
-
-    // ถ้า currentPage.value เป็น null หรือ undefined จะใช้ 0 แทน
     const safePage = currentPage.value ?? 0;
 
-    // combine keywords กับ selectedTags เป็น string query
-    const combinedQuery = [keywords.value, ...selectedTags.value].filter(Boolean).join(" ");
-
     try {
-        const response = await axios.get(
-            `${API_BASE}/trips?page=${safePage}&size=${itemsPerPage.value}&query=${encodeURIComponent(combinedQuery)}`
-        );
+        const response = await axios.get(`${API_BASE}/trips`, {
+            params: {
+                page: safePage,
+                size: itemsPerPage.value,
+                query: keywords.value || null,
+                tags: selectedTags.value.length ? selectedTags.value : null,
+            }
+        });
 
-        // อัปเดต State Pagination จาก Response
         toDisplay.value = response.data.content;
-        totalPages.value = response.data.totalPages; // ต้องตรงกับชื่อใน TripPageResponse
+        totalPages.value = response.data.totalPages;
 
     } catch (error) {
         console.error("Error fetching trip data:", error);
-        // เราควรเคลียร์ toDisplay ให้เป็น [] ด้วย เพื่อแสดง "No trips found"
         toDisplay.value = [];
     } finally {
-        //unset loading state
         isLoading.value = false;
     }
 }
+
 
 //tag selection handler
 const handleTagClick = (tag: string) => {

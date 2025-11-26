@@ -1,11 +1,18 @@
 <script setup>
 import { User, PlaneTakeoff, LogOut, Handbag } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+//handle go to homepage
+const goToHomepage = () => {
+    router.push(`/`);
+};
 </script>
 
 <template>
     <div class="navbar bg-[#DEDED1] dark:bg-[#393E46] shadow-sm sticky top-0 z-50">
         <div class="flex-1">
-            <a class="btn btn-ghost font-bold text-[#393E46] dark:text-[#DFD0B8] text-xl">
+            <a @click="goToHomepage" class="btn btn-ghost font-bold text-[#393E46] dark:text-[#DFD0B8] text-xl">
                 <Handbag />
                 Travel App</a>
         </div>

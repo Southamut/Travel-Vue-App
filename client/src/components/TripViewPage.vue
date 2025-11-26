@@ -46,7 +46,7 @@ const openGoogleMaps = () => {
     <div class="bg-[#EFECE3] dark:bg-[#222831] min-h-screen font-prompt w-full">
         <div class="max-w-6xl mx-auto px-6 py-10">
             <!-- Back Button -->
-            <button @click="router.back()" class="btn btn-ghost text-[#4A70A9] dark:text-[#DEDED1] mb-6">
+            <button @click="router.back()" class="btn btn-ghost sm:text-xl lg:text-2xl text-[#4A70A9] dark:text-[#DEDED1] mb-6">
                 <ArrowLeft class="w-5 h-5 mr-1" /> Back
             </button>
 
@@ -62,14 +62,14 @@ const openGoogleMaps = () => {
 
             <!-- Trip Detail Content -->
             <div v-else>
-                <h1 class="text-4xl font-bold text-[#4A70A9] dark:text-[#DEDED1] mb-6 text-center">
+                <h1 class="text-2xl md:text-4xl font-bold text-[#4A70A9] dark:text-[#DEDED1] mb-10 text-center">
                     {{ trip.title }}
                 </h1>
 
                 <!-- Image Gallery / Main Photo -->
                 <div class="w-full flex justify-center mb-10">
                     <div
-                        class="w-full max-w-3xl aspect-video overflow-hidden rounded-2xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                        class="w-full aspect-video overflow-hidden rounded-2xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                         <template v-if="trip.photos && trip.photos.length > 0">
                             <img :src="trip.photos[0]" alt="cover-image" class="w-full h-full object-cover" />
                         </template>
@@ -112,7 +112,7 @@ const openGoogleMaps = () => {
                                 class="w-full h-64 md:h-80 rounded-xl shadow-md border-2 border-gray-300 dark:border-gray-600">
                             </iframe>
 
-                            <button @click="openGoogleMaps" class="btn btn-primary mt-4 w-full rounded-full">
+                            <button @click="openGoogleMaps" class="btn bg-[#4A70A9] text-[#DEDED1] mt-4 w-full rounded-full">
                                 View on Google Maps
                             </button>
                         </template>

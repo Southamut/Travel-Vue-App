@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Navbar from './layout/Navbar.vue';
 import TripCards from './layout/TripCards.vue';
 import { X } from 'lucide-vue-next';
 
@@ -105,7 +104,6 @@ watch([keywords, currentPage], () => {
 </script>
 
 <template>
-    <Navbar />
     <!-- window box -->
     <div class="bg-[#EFECE3] dark:bg-[#222831] w-full font-prompt">
         <div class="max-w-7xl mx-auto">
@@ -124,7 +122,7 @@ watch([keywords, currentPage], () => {
                 <!-- selected tags -->
                 <div class="flex flex-wrap justify-center gap-2 mt-4">
                     <span v-for="tag in selectedTags" :key="tag"
-                        class="badge badge-outline text-lg text-gray-500 dark:text-[#DEDED1]">
+                        class="badge badge-outline text-lg text-gray-500 dark:text-[#DEDED1] transition-transform duration-300 transform hover:scale-105">
                         {{ tag }}
                         <button @click="removeTag(tag)" class="text-gray-500 dark:text-[#DEDED1] font-medium"><X class="h-4 w-4"/></button>
                     </span>

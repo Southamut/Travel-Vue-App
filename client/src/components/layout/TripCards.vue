@@ -2,6 +2,7 @@
 import { Link, ImageOff } from 'lucide-vue-next';
 import { defineProps, defineEmits } from 'vue';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 // ----------------------------------------------------
 // 1. Component ย่อย: LinkButton (สำหรับปุ่มคัดลอกลิงก์)
@@ -11,6 +12,7 @@ import { ref } from 'vue';
 const showToast = ref(false);
 const toastType = ref(''); // 'success' หรือ 'error'
 const toastMessage = ref('');
+const router = useRouter();
 
 const copyToClipboard = async (text) => {
     try {
@@ -58,21 +60,19 @@ const handleTagClick = (tag) => {
 }
 
 //handle go to trip detail
-const goToTripDetail = (eid: string) => {
-    console.log("Go to Trip Detail:", eid);
-    // TODO: later navigate with router.push(`/trips/${eid}`)
+const goToTripDetail = (id: number) => {
+    router.push(`/trips/${id}`);
 };
 
 </script>
 
 <template>
     <div class="trip-cards-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-6">
-        <div v-for="item in toDisplay" :key="item.eid">
-            <div @click="goToTripDetail(item.eid)" class="card h-full rounded-2xl! bg-[#DEDED1] dark:bg-base-100
+        <div v-for="item in toDisplay" :key="item.id">
+            <div @click="goToTripDetail(item.id)" class="card h-full rounded-2xl! bg-[#DEDED1] dark:bg-base-100
             transition-transform transform hover:-translate-y-2 hover:scale-105
             hover:shadow-xl duration-300 cursor-pointer">
-                <figure
-                    class="aspect-video p-2 overflow-hidden relative">
+                <figure class="aspect-video p-2 overflow-hidden relative">
                     <template v-if="item.photos[0]">
                         <img :src="item.photos[0]" alt="trip-image"
                             class="w-full h-full rounded-xl object-cover transition-transform duration-300 transform hover:scale-105"
@@ -92,9 +92,9 @@ const goToTripDetail = (eid: string) => {
                     </p>
                     <ul class="flex flex-row flex-wrap gap-2 mb-4">
                         <template v-for="(tag, index) in item.tags" :key="index">
-                            <li class="badge badge-outline">
-                                <button @click="handleTagClick(tag)"
-                                    class="text-xs md:text-sm lg:text-md font-medium text-gray-500 dark:text-[#DEDED1]">
+                            <li class="badge badge-outline transition-transform duration-300 transform hover:scale-105">
+                                <button @click.stop="handleTagClick(tag)"
+                                    class="text-xs md:text-sm lg:text-md font-medium text-gray-500 dark:text-[#DEDED1] cursor-pointer">
                                     {{ tag }} </button>
                             </li>
                         </template>
@@ -132,18 +132,17 @@ const goToTripDetail = (eid: string) => {
                                 </template>
                             </div>
                         </div>
-                        <button @click="copyToClipboard(item.url)"
+                        <button @click.stop="copyToClipboard(item.url)"
                             class="btn btn-ghost border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16">
                             <Link class="text-[#4A70A9] dark:text-[#DFD0B8]" />
                         </button>
-
-                        <div v-if="showToast" class="toast toast-end">
-                            <div :class="['alert', toastType === 'success' ? 'alert-success' : 'alert-error']">
-                                <span class="text-xl text-white">{{ toastMessage }}</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div v-if="showToast" class="toast toast-end">
+            <div :class="['alert', toastType === 'success' ? 'alert-success' : 'alert-error']">
+                <span class="text-xl text-white">{{ toastMessage }}</span>
             </div>
         </div>
     </div>

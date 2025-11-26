@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import LandingPage from './components/LandingPage.vue';
+import Navbar from './components/layout/Navbar.vue'
 </script>
 
 <template>
-    <LandingPage />
+  <div class="min-h-screen">
+    <Navbar />
+    <router-view />
+  </div>
 </template>

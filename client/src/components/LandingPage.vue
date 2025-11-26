@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Navbar from './layout/Navbar.vue';
 import TripCards from './layout/TripCards.vue';
 import { X } from 'lucide-vue-next';
 
@@ -34,7 +33,7 @@ const handleChange = (e: any) => {
 //Get data and pagination
 const currentPage = ref(0);     // หมายเลขหน้าปัจจุบัน (เริ่มที่ 0)
 const totalPages = ref(1);      // จำนวนหน้ารวมทั้งหมด
-const itemsPerPage = ref(10);   // จำนวนรายการต่อหน้า (size)
+const itemsPerPage = ref(9);   // จำนวนรายการต่อหน้า (size)
 
 // ฟังก์ชันสำหรับเปลี่ยนหน้า
 const goToPage = (pageNumber: number) => {
@@ -105,7 +104,6 @@ watch([keywords, currentPage], () => {
 </script>
 
 <template>
-    <Navbar />
     <!-- window box -->
     <div class="bg-[#EFECE3] dark:bg-[#222831] w-full font-prompt">
         <div class="max-w-7xl mx-auto">
@@ -124,7 +122,7 @@ watch([keywords, currentPage], () => {
                 <!-- selected tags -->
                 <div class="flex flex-wrap justify-center gap-2 mt-4">
                     <span v-for="tag in selectedTags" :key="tag"
-                        class="badge badge-outline text-lg text-gray-500 dark:text-[#DEDED1]">
+                        class="badge badge-outline text-lg text-gray-500 dark:text-[#DEDED1] transition-transform duration-300 transform hover:scale-105">
                         {{ tag }}
                         <button @click="removeTag(tag)" class="text-gray-500 dark:text-[#DEDED1] font-medium"><X class="h-4 w-4"/></button>
                     </span>
@@ -139,7 +137,7 @@ watch([keywords, currentPage], () => {
                 <!-- trip cards -->
                 <div v-if="toDisplay.length > 0">
                     <TripCards class="mt-16" :toDisplay="toDisplay" @tag-clicked="handleTagClick" />
-                    <div class="pb-10">
+                    <div class="py-10">
                         <div class="flex justify-center">
                             <div class="join shadow-md">
                                 <button v-for="page in totalPages" :key="page" class="join-item btn"

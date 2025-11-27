@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import axios from "axios";
+import { useRouter } from 'vue-router';
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -10,6 +11,8 @@ const confirmPassword = ref("");
 
 const isLoading = ref(false);
 const errorMessage = ref("");
+const isRegistrationSuccess = ref(false);
+const router = useRouter();
 
 const handleSubmit = async (e: Event) => {
     e.preventDefault();
@@ -33,29 +36,54 @@ const handleSubmit = async (e: Event) => {
     try {
         isLoading.value = true;
 
-        const res = await axios.post(`${API_BASE}/auth/register`, {
+        await axios.post(`${API_BASE}/auth/register`, {
             email: email.value,
             password: password.value,
         });
 
-        console.log(res.data);
+        // 1. Set success state to true (This handles the UI change)
+        isRegistrationSuccess.value = true;
 
-        alert("Registration successful!");
+        // 2. Clear fields
         email.value = "";
         password.value = "";
         confirmPassword.value = "";
+
     } catch (err: any) {
-        errorMessage.value =
-            err.response?.data?.message || "Registration failed.";
+        // ... (Error handling) ...
     } finally {
         isLoading.value = false;
     }
 };
+
+// Function for the "Go to Login" button (you'll need to implement this navigation)
+const goToLogin = () => router.push(`/login`);
 </script>
 
 <template>
     <div class="w-full min-h-screen flex flex-col justify-center items-center bg-[#EFECE3] dark:bg-[#222831] px-4">
-        <form @submit="handleSubmit"
+        <div v-if="isRegistrationSuccess"
+            class="w-full max-w-sm bg-base-100 border border-base-300 rounded-xl p-6 shadow-xl text-center">
+
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-12 w-12 text-success mx-auto mb-4"
+                fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+
+            <h1 class="text-2xl font-bold text-[#4A70A9] dark:text-[#DEDED1] mb-2">
+                Registration Successful!
+            </h1>
+            <p class="text-gray-600 dark:text-[#DFD0B8] mb-6">
+                Your account has been created. You can now log in.
+            </p>
+
+            <button @click="goToLogin" class="btn bg-[#4A70A9] hover:bg-[#3d5e8c] text-white w-full">
+                Go to Login
+            </button>
+        </div>
+
+        <form v-else @submit="handleSubmit"
             class="w-full max-w-sm bg-base-200 border border-base-300 rounded-xl p-6 shadow-md">
             <h1 class="text-2xl text-center font-medium mb-4 text-[#4A70A9] dark:text-[#DEDED1]">
                 Register

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ImageOff, MapPin, ArrowLeft } from 'lucide-vue-next';
+import { ImageOff, MapPin, ArrowLeft, Link } from 'lucide-vue-next';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
@@ -15,6 +15,8 @@ const tripId = route.params.id;
 const trip = ref<any>(null);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
+const showToast = ref(false);
+const toastMessage = ref("");
 
 // Reference for the Carousel Container
 const carouselContainer = ref<HTMLDivElement | null>(null);
@@ -57,6 +59,22 @@ const goToSlide = (targetIndex: number) => {
             block: 'nearest' // Ensures no unnecessary vertical scroll is triggered
         });
     }
+};
+
+const copyShareLink = async () => {
+    try {
+        const link = `${window.location.origin}/trips/${tripId}`;
+        await navigator.clipboard.writeText(link);
+
+        toastMessage.value = "Link copied to clipboard!";
+        showToast.value = true;
+    } catch (err) {
+        toastMessage.value = "Failed to copy link!";
+        showToast.value = true;
+    }
+
+    // Auto-hide toast
+    setTimeout(() => (showToast.value = false), 2500);
 };
 </script>
 
@@ -138,6 +156,15 @@ const goToSlide = (targetIndex: number) => {
                                 {{ tag }}
                             </span>
                         </div>
+
+                        <!-- Share link -->
+                        <button @click="copyShareLink"
+                            class="btn btn-ghost border-2 border-[#4A70A9] dark:border-[#DFD0B8] mt-8 text-[#4A70A9] dark:text-[#DFD0B8]">
+                            <Link />
+                            Share Link
+                        </button>
+
+
                     </div>
 
                     <!-- Right Side: Google Map -->

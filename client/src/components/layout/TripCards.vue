@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, ImageOff } from 'lucide-vue-next';
+import { it } from 'node:test';
 import { defineProps, defineEmits } from 'vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -14,8 +15,11 @@ const toastType = ref(''); // 'success' หรือ 'error'
 const toastMessage = ref('');
 const router = useRouter();
 
-const copyToClipboard = async (text) => {
+
+
+const copyToClipboard = async (id: number) => {
     try {
+        const text = `${window.location.origin}/trips/${id}`;
         await navigator.clipboard.writeText(text);
 
         // แสดง Toast สำเร็จ
@@ -132,7 +136,7 @@ const goToTripDetail = (id: number) => {
                                 </template>
                             </div>
                         </div>
-                        <button @click.stop="copyToClipboard(item.url)"
+                        <button @click.stop="copyToClipboard(item.id)"
                             class="btn btn-ghost border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16">
                             <Link class="text-[#4A70A9] dark:text-[#DFD0B8]" />
                         </button>

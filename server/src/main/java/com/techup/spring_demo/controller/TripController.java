@@ -62,14 +62,33 @@ public class TripController {
     // Authenticated endpoints (must come before public /{id} to avoid route
     // conflict)
 
-    // GET /api/trips/mine - Get user's trips
+    // GET /api/trips/mine - Get user's trips + search + tags
     @GetMapping("/mine")
-    public ResponseEntity<List<TripResponse>> getMyTrips(
-            @RequestHeader(value = "Authorization", required = false) String authorization) {
+    public ResponseEntity<TripPageResponse> getMyTrips(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) List<String> tags) {
 
         Long userId = getUserIdFromToken(authorization);
-        List<TripResponse> trips = tripService.getTripsByAuthor(userId);
-        return ResponseEntity.ok(trips);
+
+        boolean hasQuery = query != null && !query.trim().isEmpty();
+        boolean hasTags = tags != null && !tags.isEmpty();
+
+        if (hasQuery || hasTags) {
+            TripPageResponse result = tripService.searchMyTrips(
+                    userId,
+                    hasQuery ? query.trim() : null,
+                    hasTags ? tags : null,
+                    page,
+                    size);
+
+            return ResponseEntity.ok(result);
+        }
+
+        TripPageResponse result = tripService.getTripsByAuthor(userId, page, size);
+        return ResponseEntity.ok(result);
     }
 
     // Public API endpoints

@@ -35,7 +35,7 @@ onMounted(() => {
                     class="menu menu-sm dropdown-content bg-[#EFECE3] dark:bg-[#393E46] rounded-box mt-3 w-52 p-2 shadow text-gray-600 dark:text-[#DFD0B8] font-medium">
 
                     <li>
-                        <a class="text-lg">
+                        <a class="text-lg" @click="router.push(`/profile`)">
                             <User class="h-5 w-5" />
                             Profile
                         </a>

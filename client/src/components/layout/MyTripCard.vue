@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ImageOff } from 'lucide-vue-next';
+import { ImageOff, SquarePen } from 'lucide-vue-next';
 import { defineProps } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -79,7 +79,7 @@ const editTrip = (id: number) => {
                     <div class="card-actions justify-between items-end">
                         <button @click.stop="editTrip(item.id)"
                             class="btn btn-ghost border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16">
-                            <Link class="text-[#4A70A9] dark:text-[#DFD0B8]" />
+                            <SquarePen class="text-[#4A70A9] dark:text-[#DFD0B8]" />
                         </button>
                     </div>
                 </div>

@@ -1,8 +1,19 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
 import axios from 'axios';
 import MyTripCard from './layout/MyTripCard.vue';
 import { X } from 'lucide-vue-next';
+
+//auth
+const auth = useAuthStore();
+const router = useRouter();
+
+onMounted(async () => {
+    await auth.fetchUser();
+    if (!auth.isAuth) router.push("/login");
+});
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -29,9 +40,11 @@ const goToPage = (page: number) => {
 
 const getData = async () => {
     isLoading.value = true;
+    const token = localStorage.getItem('accessToken');
 
     try {
         const res = await axios.get(`${API_BASE}/trips/mine`, {
+            headers: { Authorization: `Bearer ${token}` },
             params: {
                 page: currentPage.value,
                 size: itemsPerPage.value,
@@ -77,14 +90,14 @@ watch([keywords, currentPage], () => {
         <div class="max-w-7xl mx-auto">
             <!-- title -->
             <div class="flex flex-col items-center justify-center pt-15">
-                <h1 class="text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">เที่ยวไหนดี</h1>
+                <h1 class="text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">My Trips</h1>
             </div>
 
             <!-- search box  -->
             <div class="flex flex-col items-center justify-center mt-10 mb-5">
                 <label for="search"
-                    class="text-sm lg:text-md xl:text-xl font-medium text-gray-500 dark:text-[#DFD0B8] w-9/12 text-left">หาที่เที่ยวแล้วไปกัน</label>
-                <input type="text" placeholder="หาที่เที่ยวแล้วไปกัน..." id="search"
+                    class="text-sm lg:text-md xl:text-xl font-medium text-gray-500 dark:text-[#DFD0B8] w-9/12 text-left">ค้นหาทริปของคุณ</label>
+                <input type="text" placeholder="ค้นหาทริปของคุณ..." id="search"
                     class="w-9/12 p-2 text-center text-sm xl:text-xl border-b border-gray-300 dark:text-[#DFD0B8]"
                     @input="handleChange" :value="keywords" />
                 <!-- selected tags -->

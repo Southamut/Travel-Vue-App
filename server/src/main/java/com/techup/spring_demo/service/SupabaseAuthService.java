@@ -20,10 +20,15 @@ public class SupabaseAuthService {
     private final SupabaseConfig supabaseConfig;
 
     // Register Service
-    public RegisterResult register(String email, String password) {
+    public RegisterResult register(String email, String password, String displayName, String avatarUrl) {
         RegisterRequest request = new RegisterRequest();
         request.setEmail(email);
         request.setPassword(password);
+
+        // set metadata
+        request.setData(Map.of(
+                "display_name", displayName != null ? displayName : email.split("@")[0],
+                "avatar_url", avatarUrl != null ? avatarUrl : null));
 
         try {
             RegisterResponse response = supabaseWebClient
@@ -165,6 +170,8 @@ public class SupabaseAuthService {
     private static class RegisterRequest {
         private String email;
         private String password;
+        @JsonProperty("data")
+        private Map<String, Object> data; // additional user metadata
     }
 
     @Data

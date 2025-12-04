@@ -39,6 +39,8 @@ const handleSubmit = async (e: Event) => {
         await axios.post(`${API_BASE}/auth/register`, {
             email: email.value,
             password: password.value,
+            displayName: email.value.split("@")[0],
+            avatarUrl: null
         });
 
         // 1. Set success state to true (This handles the UI change)

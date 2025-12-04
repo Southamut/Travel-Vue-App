@@ -137,7 +137,8 @@ const goToTripDetail = (id: number) => {
                             </div>
                         </div>
                         <button @click.stop="copyToClipboard(item.id)"
-                            class="btn btn-ghost border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16">
+                            class="btn btn-ghost tooltip tooltip-bottom tooltip-primary border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16"
+                            data-tip="Copy Link">
                             <Link class="text-[#4A70A9] dark:text-[#DFD0B8]" />
                         </button>
                     </div>

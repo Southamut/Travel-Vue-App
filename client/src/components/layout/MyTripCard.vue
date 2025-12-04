@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ImageOff, SquarePen } from 'lucide-vue-next';
+import { ImageOff, SquarePen, Trash } from 'lucide-vue-next';
 import { defineProps } from 'vue';
 import { useRouter } from 'vue-router';
+import DeleteModal from '../modal/DeleteModal.vue';
+import { ref } from 'vue';
+import axios from 'axios';
+import { useAuthStore } from '../../stores/auth';
 
-// ----------------------------------------------------
-// 1. Component ย่อย: LinkButton (สำหรับปุ่มคัดลอกลิงก์)
-// ----------------------------------------------------
 const router = useRouter();
+const showDeleteModal = ref(false);
+const deleteTarget = ref<any>(null);
 
-// ----------------------------------------------------
-// 3. Component หลัก: TripSuggestList
-// ----------------------------------------------------
+const auth = useAuthStore();
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 // Prop Declaration (แทน props ใน React)
 interface TripCardProps {
@@ -41,6 +43,46 @@ const editTrip = (id: number) => {
     router.push(`/my-trips/edit/${id}`);
 };
 
+//handle delete trip
+const confirmDeleteTrip = async (item: any) => {
+    if (!item) return;
+    try {
+        // ปิด modal ก่อนหรือหลังก็ได้
+        const token = auth.token;
+        if (!token) {
+            alert("No token found, please login.");
+            return;
+        }
+
+        await axios.delete(`${API_BASE}/trips/${item.id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        // ถ้าลบสำเร็จ ให้ปิด modal และลบ item จาก list ทันที
+        closeModal();
+
+        // update local state: remove item จาก toDisplay
+        const index = props.toDisplay.findIndex((i) => i.id === item.id);
+        if (index > -1) props.toDisplay.splice(index, 1);
+
+        console.log("Trip deleted successfully:", item.id);
+    } catch (err) {
+        console.error("Failed to delete trip:", err);
+        alert("Failed to delete trip");
+    }
+};
+
+const openModal = (item: any) => {
+    deleteTarget.value = item;
+    showDeleteModal.value = true;
+};
+
+const closeModal = () => {
+    deleteTarget.value = null;
+    showDeleteModal.value = false;
+};
 </script>
 
 <template>
@@ -76,14 +118,23 @@ const editTrip = (id: number) => {
                             </li>
                         </template>
                     </ul>
-                    <div class="card-actions justify-between items-end">
+                    <div class="card-actions justify-between">
                         <button @click.stop="editTrip(item.id)"
-                            class="btn btn-ghost border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16">
+                            class="btn btn-ghost tooltip tooltip-bottom tooltip-primary border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16"
+                            data-tip="Edit Trip">
                             <SquarePen class="text-[#4A70A9] dark:text-[#DFD0B8]" />
+                        </button>
+                        <button @click.stop="openModal(item)"
+                            class="btn btn-ghost tooltip tooltip-bottom tooltip-error border-2 border-red-400 rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16"
+                            data-tip="Delete Trip">
+                            <Trash class="text-red-400" />
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Modal -->
+    <DeleteModal :show="showDeleteModal" :itemTitle="deleteTarget?.title" @confirm="confirmDeleteTrip(deleteTarget)"
+        @cancel="closeModal" />
 </template>

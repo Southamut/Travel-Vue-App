@@ -162,6 +162,28 @@ public class TripService {
                 tripPage.hasPrevious());
     }
 
+    public TripPageResponse searchMyTrips(Long authorId, String query, List<String> tags, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        String cleanedQuery = (query != null && !query.isBlank()) ? query : null;
+        String[] tagArray = (tags != null && !tags.isEmpty()) ? tags.toArray(new String[0]) : new String[0];
+
+        Page<Trip> tripPage = tripRepository.searchMyTrips(authorId, cleanedQuery, tagArray, pageable);
+
+        List<TripResponse> content = tripPage.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return new TripPageResponse(
+                content,
+                tripPage.getNumber(),
+                tripPage.getSize(),
+                tripPage.getTotalElements(),
+                tripPage.getTotalPages(),
+                tripPage.hasNext(),
+                tripPage.hasPrevious());
+    }
+
     public TripResponse getTripById(Long id) {
         Trip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip not found"));

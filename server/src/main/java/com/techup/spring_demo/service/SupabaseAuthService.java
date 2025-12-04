@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
@@ -108,6 +107,39 @@ public class SupabaseAuthService {
             throw new RuntimeException(errorMessage);
         } catch (Exception e) {
             throw new RuntimeException("Login failed: " + e.getMessage());
+        }
+    }
+
+    // Update Profile Service
+    public UserResult updateProfile(String accessToken, String displayName) {
+        try {
+            Map<String, Object> body = Map.of(
+                    "data", Map.of(
+                            "display_name", displayName));
+
+            UserResponse response = supabaseWebClient
+                    .put()
+                    .uri("/user")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(UserResponse.class)
+                    .block();
+
+            if (response != null) {
+                return new UserResult(
+                        true,
+                        response.getId(),
+                        response.getEmail(),
+                        response.getDisplayName(),
+                        response.getCreatedAt());
+            }
+
+            throw new RuntimeException("Failed to update profile");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Update profile failed: " + e.getMessage());
         }
     }
 

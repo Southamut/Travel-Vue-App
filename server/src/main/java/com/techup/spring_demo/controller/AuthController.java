@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -78,6 +80,29 @@ public class AuthController {
             // Let GlobalExceptionHandler handle it to return error message
             throw e;
         }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<UserResponse> updateProfile(
+            @RequestHeader("Authorization") String authorization,
+            @RequestBody Map<String, String> body) {
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new RuntimeException("Unauthorized: No token provided");
+        }
+
+        String token = authorization.substring(7);
+        String displayName = body.get("displayName");
+
+        SupabaseAuthService.UserResult result = supabaseAuthService.updateProfile(token, displayName);
+
+        UserResponse response = new UserResponse(
+                result.getId(),
+                result.getEmail(),
+                result.getDisplayName(),
+                result.getCreatedAt());
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")

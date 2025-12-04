@@ -6,10 +6,12 @@ import DeleteModal from '../modal/DeleteModal.vue';
 import { ref } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '../../stores/auth';
+import { useToastStore } from '../../stores/toast'
 
 const router = useRouter();
 const showDeleteModal = ref(false);
 const deleteTarget = ref<any>(null);
+const toast = useToastStore()
 
 const auth = useAuthStore();
 const API_BASE = import.meta.env.VITE_API_BASE || "";
@@ -67,11 +69,14 @@ const confirmDeleteTrip = async (item: any) => {
         const index = props.toDisplay.findIndex((i) => i.id === item.id);
         if (index > -1) props.toDisplay.splice(index, 1);
 
-        console.log("Trip deleted successfully:", item.id);
+        toast.success("Trip deleted successfully");
     } catch (err) {
         console.error("Failed to delete trip:", err);
-        alert("Failed to delete trip");
+        toast.error("Failed to delete trip");
+
     }
+    // Auto-hide toast
+    setTimeout(() => (showToast.value = false), 2500);
 };
 
 const openModal = (item: any) => {

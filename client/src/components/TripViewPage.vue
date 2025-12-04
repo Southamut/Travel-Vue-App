@@ -3,6 +3,7 @@ import { ImageOff, MapPin, ArrowLeft, Link } from 'lucide-vue-next';
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { useToastStore } from '../stores/toast'
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -15,8 +16,7 @@ const tripId = route.params.id;
 const trip = ref<any>(null);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
-const showToast = ref(false);
-const toastMessage = ref("");
+const toast = useToastStore()
 
 // Reference for the Carousel Container
 const carouselContainer = ref<HTMLDivElement | null>(null);
@@ -66,15 +66,10 @@ const copyShareLink = async () => {
         const link = `${window.location.origin}/trips/${tripId}`;
         await navigator.clipboard.writeText(link);
 
-        toastMessage.value = "Link copied to clipboard!";
-        showToast.value = true;
+        toast.success('Link copied to clipboard!')
     } catch (err) {
-        toastMessage.value = "Failed to copy link!";
-        showToast.value = true;
+        toast.error('Failed to copy link!')
     }
-
-    // Auto-hide toast
-    setTimeout(() => (showToast.value = false), 2500);
 };
 </script>
 

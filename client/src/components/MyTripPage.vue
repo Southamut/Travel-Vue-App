@@ -40,11 +40,10 @@ const goToPage = (page: number) => {
 
 const getData = async () => {
     isLoading.value = true;
-    const token = localStorage.getItem('accessToken');
 
     try {
         const res = await axios.get(`${API_BASE}/trips/mine`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${auth.token}` },
             params: {
                 page: currentPage.value,
                 size: itemsPerPage.value,

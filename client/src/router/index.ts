@@ -5,6 +5,8 @@ import LoginPage from '../components/LoginPage.vue'
 import RegisterPage from '../components/RegisterPage.vue'
 import MyTripPage from '../components/MyTripPage.vue'
 import ProfilePage from '../components/ProfilePage.vue'
+import EditProfilePage from '../components/EditProfilePage.vue'
+import EditTripPage from '../components/EditTripPage.vue'
 
 const routes = [
   { path: '/', component: LandingPage },
@@ -12,7 +14,9 @@ const routes = [
   { path: '/login', component: LoginPage },
   { path: '/register', component: RegisterPage },
   { path: `/my-trips`, component: MyTripPage},
-  { path: `/profile`, component: ProfilePage }
+  { path: `/my-trips/edit/:id`, component: EditTripPage},
+  { path: `/profile`, component: ProfilePage },
+  { path: `/profile/edit`, component: EditProfilePage}
 ]
 
 const router = createRouter({

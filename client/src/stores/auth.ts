@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
     // --- State ---
     const isAuth = ref(false);
     const user = ref<{ id: number; displayName: string | null; email: string } | null>(null);
+    const token = ref<string | null>(localStorage.getItem("accessToken"));
 
     // --- Fetch user from token ---
     const fetchUser = async () => {
@@ -34,6 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
     const setTokens = (access: string, refresh: string) => {
         localStorage.setItem('accessToken', access);
         localStorage.setItem('refreshToken', refresh);
+        token.value = access;
         fetchUser();
     };
 
@@ -52,6 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
 
+        token.value = null;
         user.value = null;
         isAuth.value = false;
     };
@@ -60,6 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
     return {
         isAuth,
         user,
+        token,
         fetchUser,
         logout,
         setTokens,

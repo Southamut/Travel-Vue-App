@@ -7,7 +7,7 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 export const useAuthStore = defineStore('auth', () => {
     // --- State ---
     const isAuth = ref(false);
-    const user = ref<{ id: number; display_name: string | null; email: string } | null>(null);
+    const user = ref<{ id: number; displayName: string | null; email: string } | null>(null);
 
     // --- Fetch user from token ---
     const fetchUser = async () => {

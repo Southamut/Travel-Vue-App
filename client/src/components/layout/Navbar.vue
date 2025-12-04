@@ -3,9 +3,12 @@ import { User, PlaneTakeoff, LogOut, Handbag } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import { useAuthStore } from '../../stores/auth';
+import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const auth = useAuthStore();
+
+const { isAuth } = storeToRefs(auth);
 
 // Initialize auth on page load
 onMounted(() => {
@@ -23,7 +26,7 @@ onMounted(() => {
         </div>
 
         <!-- Logged In -->
-        <div v-if="auth.isAuth" class="flex gap-2">
+        <div v-if="isAuth" class="flex gap-2">
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                     <div class="w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">

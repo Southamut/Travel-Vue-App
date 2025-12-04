@@ -2,8 +2,10 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
+const auth = useAuthStore();
 
 // --- Form state ---
 const email = ref('');
@@ -27,9 +29,14 @@ const login = async () => {
             password: password.value
         });
 
-        // Save tokens (localStorage for now, or use cookies for better security)
-        localStorage.setItem('accessToken', response.data.accessToken);
-        window.dispatchEvent(new Event("auth-changed"));
+        // 👉 ใช้ Pinia แทน localStorage ตรง ๆ
+        auth.setTokens(
+            response.data.accessToken,
+            response.data.refreshToken
+        );
+
+        // 👉 รอ fetchUser เสร็จ เพื่อให้ navbar ปีนทันที
+        await auth.fetchUser();
 
         // Redirect to homepage or My Destinations
         router.push('/');

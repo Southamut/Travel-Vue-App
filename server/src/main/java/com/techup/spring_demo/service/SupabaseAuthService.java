@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
@@ -20,10 +19,15 @@ public class SupabaseAuthService {
     private final SupabaseConfig supabaseConfig;
 
     // Register Service
-    public RegisterResult register(String email, String password) {
+    public RegisterResult register(String email, String password, String displayName, String avatarUrl) {
         RegisterRequest request = new RegisterRequest();
         request.setEmail(email);
         request.setPassword(password);
+
+        // set metadata
+        request.setData(Map.of(
+                "display_name", displayName != null ? displayName : email.split("@")[0],
+                "avatar_url", avatarUrl != null ? avatarUrl : null));
 
         try {
             RegisterResponse response = supabaseWebClient
@@ -106,6 +110,39 @@ public class SupabaseAuthService {
         }
     }
 
+    // Update Profile Service
+    public UserResult updateProfile(String accessToken, String displayName) {
+        try {
+            Map<String, Object> body = Map.of(
+                    "data", Map.of(
+                            "display_name", displayName));
+
+            UserResponse response = supabaseWebClient
+                    .put()
+                    .uri("/user")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(UserResponse.class)
+                    .block();
+
+            if (response != null) {
+                return new UserResult(
+                        true,
+                        response.getId(),
+                        response.getEmail(),
+                        response.getDisplayName(),
+                        response.getCreatedAt());
+            }
+
+            throw new RuntimeException("Failed to update profile");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Update profile failed: " + e.getMessage());
+        }
+    }
+
     // Logout Service
     public LogoutResult logout(String accessToken) {
         try {
@@ -165,6 +202,8 @@ public class SupabaseAuthService {
     private static class RegisterRequest {
         private String email;
         private String password;
+        @JsonProperty("data")
+        private Map<String, Object> data; // additional user metadata
     }
 
     @Data

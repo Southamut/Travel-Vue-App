@@ -65,7 +65,7 @@ onMounted(() => {
         <!-- Not Logged In -->
         <div v-else class="flex gap-2">
             <button @click="router.push('/login')" class="btn btn-outline btn-sm">Login</button>
-            <button @click="router.push('/register')" class="btn btn-primary btn-sm">Register</button>
+            <button @click="router.push('/register')" class="btn btn-neutral btn-sm">Register</button>
         </div>
     </div>
 </template>

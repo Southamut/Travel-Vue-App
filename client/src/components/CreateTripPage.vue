@@ -26,6 +26,17 @@ const photos = ref<File[]>([]);
 const previews = ref<string[]>([]);
 
 // ---------------------------------------------
+// ERROR STATE
+// ---------------------------------------------
+const errors = ref({
+    title: "",
+    description: "",
+    province: "",
+    tags: "",
+    location: ""
+});
+
+// ---------------------------------------------
 // TAG HANDLING
 // ---------------------------------------------
 const addTag = () => {
@@ -44,7 +55,7 @@ const onSelectImages = (e: Event) => {
 
     const selected = Array.from(input.files);
     if (photos.value.length + selected.length > 4) {
-        alert("You can only upload up to 4 images.");
+        errors.value.tags = "You can only upload up to 4 images."; // optional message
         return;
     }
     selected.forEach(file => {
@@ -151,12 +162,35 @@ onMounted(() => {
 const isSubmitting = ref(false);
 
 const submitTrip = async () => {
-    if (!auth.token) {
-        alert("No token found, please login.");
-        return;
-    }
+    // reset errors
+    errors.value = { title: "", description: "", province: "", tags: "", location: "" };
+
+    let hasError = false;
     if (!title.value.trim()) {
-        alert("Title is required.");
+        errors.value.title = "Title is required";
+        hasError = true;
+    }
+    if (!description.value.trim()) {
+        errors.value.description = "Description is required";
+        hasError = true;
+    }
+    if (!province.value) {
+        errors.value.province = "Province is required";
+        hasError = true;
+    }
+    if (!tags.value.length) {
+        errors.value.tags = "At least one tag is required";
+        hasError = true;
+    }
+    if (!latitude.value || !longitude.value) {
+        errors.value.location = "Location is required";
+        hasError = true;
+    }
+
+    if (hasError) return;
+
+    if (!auth.token) {
+        errors.value.title = "You must be logged in";
         return;
     }
 
@@ -187,18 +221,15 @@ const submitTrip = async () => {
             headers: { Authorization: `Bearer ${auth.token}` },
         });
 
-        alert("Trip created!");
-        router.push("/trips");
+        router.push("/my-trips");
     } catch (err) {
         console.error(err);
-        alert("Failed to create trip");
+        errors.value.title = "Failed to create trip";
     } finally {
         isSubmitting.value = false;
     }
 };
 </script>
-
-
 
 <template>
     <div class="bg-[#EFECE3] dark:bg-[#222831] w-full min-h-screen font-prompt pt-12 pb-24">
@@ -210,21 +241,19 @@ const submitTrip = async () => {
             <div class="card bg-[#DEDED1] dark:bg-base-100 p-10 rounded-2xl">
 
                 <!-- Title -->
-                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mb-2">
-                    Title
-                </label>
+                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mb-2">Title</label>
                 <input v-model="title" type="text" class="input input-bordered w-full bg-[#EFECE3] dark:bg-[#222831]" />
+                <p v-if="errors.title" class="text-red-500 text-sm mt-1">{{ errors.title }}</p>
 
                 <!-- Description -->
-                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-6 mb-2">
-                    Description
-                </label>
-                <textarea v-model="description" rows="5" class="textarea textarea-bordered bg-[#EFECE3] dark:bg-[#222831] w-full"></textarea>
+                <label
+                    class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-6 mb-2">Description</label>
+                <textarea v-model="description" rows="5"
+                    class="textarea textarea-bordered bg-[#EFECE3] dark:bg-[#222831] w-full"></textarea>
+                <p v-if="errors.description" class="text-red-500 text-sm mt-1">{{ errors.description }}</p>
 
                 <!-- Province -->
-                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-6 mb-2">
-                    Province
-                </label>
+                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-6 mb-2">Province</label>
                 <select v-model="province" class="select select-bordered bg-[#EFECE3] dark:bg-[#222831] w-full">
                     <option disabled value="">Select province</option>
                     <option>Bangkok</option>
@@ -234,11 +263,10 @@ const submitTrip = async () => {
                     <option>Khon Kaen</option>
                     <option>Ayutthaya</option>
                 </select>
+                <p v-if="errors.province" class="text-red-500 text-sm mt-1">{{ errors.province }}</p>
 
                 <!-- Tags -->
-                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-6 mb-2">
-                    Tags
-                </label>
+                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-6 mb-2">Tags</label>
                 <div class="flex gap-2 mb-3 flex-wrap">
                     <span v-for="(t, i) in tags" :key="i" class="badge badge-outline">
                         {{ t }}
@@ -246,14 +274,15 @@ const submitTrip = async () => {
                     </span>
                 </div>
                 <div class="flex gap-2">
-                    <input v-model="newTag" type="text" placeholder="Add tag" class="input input-bordered bg-[#EFECE3] dark:bg-[#222831] w-full" />
+                    <input v-model="newTag" type="text" placeholder="Add tag"
+                        class="input input-bordered bg-[#EFECE3] dark:bg-[#222831] w-full" />
                     <button class="btn bg-[#4A70A9] text-white" @click="addTag">Add</button>
                 </div>
+                <p v-if="errors.tags" class="text-red-500 text-sm mt-1">{{ errors.tags }}</p>
 
                 <!-- Photos Upload -->
-                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-8 mb-2">
-                    Photos (Max 4)
-                </label>
+                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-8 mb-2">Photos (Max
+                    4)</label>
                 <input type="file" accept="image/*" multiple class="file-input file-input-ghost"
                     @change="onSelectImages" />
                 <div class="grid grid-cols-2 gap-3 mt-4">
@@ -271,9 +300,7 @@ const submitTrip = async () => {
                 </div>
 
                 <!-- LOCATION PICKER -->
-                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-10 mb-2">
-                    Location
-                </label>
+                <label class="block text-lg text-[#4A70A9] dark:text-[#DEDED1] font-medium mt-10 mb-2">Location</label>
                 <div class="relative">
                     <input v-model="searchQuery" type="text" placeholder="Search location..."
                         class="input input-bordered w-full mb-2" @focus="showDropdown = searchResults.length > 0" />
@@ -289,8 +316,7 @@ const submitTrip = async () => {
                 <p class="text-sm mt-2 text-gray-600 dark:text-gray-300">
                     Lat: {{ latitude.toFixed(6) }} | Lng: {{ longitude.toFixed(6) }}
                 </p>
-
-
+                <p v-if="errors.location" class="text-red-500 text-sm mt-1">{{ errors.location }}</p>
 
                 <!-- Submit -->
                 <button class="btn bg-[#4A70A9] text-[#DEDED1] w-full mt-10 rounded-full" :disabled="isSubmitting"

@@ -20,6 +20,7 @@
     "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^24.10.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",

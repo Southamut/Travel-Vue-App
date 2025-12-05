@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { GraduationCap, Github, Linkedin } from 'lucide-vue-next';
 </script>
 

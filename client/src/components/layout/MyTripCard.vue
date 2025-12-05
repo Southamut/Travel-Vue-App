@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<TripCardProps>(), {
 const emit = defineEmits(['tag-clicked']);
 
 // Handler สำหรับส่ง Tag ที่ถูกคลิกขึ้นไปให้ Component แม่
-const handleTagClick = (tag) => {
+const handleTagClick = (tag: String) => {
     emit('tag-clicked', tag);
 }
 
@@ -113,7 +113,7 @@ const closeModal = () => {
                         {{ item.description.length > 100 ? item.description.slice(0, 100) + "..." : item.description }}
                     </p>
                     <ul class="flex flex-row flex-wrap gap-2 mb-4">
-                        <template v-for="(tag, index) in item.tags" :key="index">
+                        <template v-for="(tag) in item.tags" :key="index">
                             <li class="badge badge-outline transition-transform duration-300 transform hover:scale-105">
                                 <button @click.stop="handleTagClick(tag)"
                                     class="text-xs md:text-sm lg:text-md font-medium text-gray-500 dark:text-[#DEDED1] cursor-pointer">

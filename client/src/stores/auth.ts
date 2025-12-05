@@ -10,6 +10,7 @@ export const useAuthStore = defineStore("auth", () => {
   const user = ref<{
     id: number;
     displayName: string | null;
+    avatarUrl?: string | null;
     email: string;
   } | null>(null);
   const token = ref<string | null>(localStorage.getItem("accessToken"));

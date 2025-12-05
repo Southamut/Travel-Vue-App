@@ -13,7 +13,7 @@ const toast = useToastStore()
 
 const displayName = ref(auth.user?.displayName ?? "");
 const selectedFile = ref<File | null>(null);
-const previewUrl = ref<string | null>(null);
+const previewUrl = ref<string | null>(auth.user?.avatarUrl ?? null);
 const isSubmitting = ref(false);
 const fileInputKey = ref(0);
 
@@ -21,12 +21,13 @@ function onFileChange(e: Event) {
     const input = e.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
 
-    selectedFile.value = input.files[0];
-    previewUrl.value = URL.createObjectURL(selectedFile.value);
+    selectedFile.value = input.files[0] ?? null;
+    previewUrl.value = selectedFile.value ? URL.createObjectURL(selectedFile.value) : null;
+
 }
 
 function removeImage() {
-    previewUrl.value = null;
+    previewUrl.value = auth.user?.avatarUrl ?? null;
     selectedFile.value = null;
 
     fileInputKey.value++;
@@ -63,7 +64,7 @@ async function submitAll() {
         if (displayName.value) payload.displayName = displayName.value;
         if (updatedAvatarUrl) payload.avatarUrl = updatedAvatarUrl;
 
-        const result = await axios.put(`${API_BASE}/auth/profile`, payload, {
+        await axios.put(`${API_BASE}/auth/profile`, payload, {
             headers: { Authorization: `Bearer ${auth.token}` },
         });
 

@@ -122,10 +122,15 @@ public class SupabaseAuthService {
     // Update Profile Service
     public UserResult updateProfile(String accessToken, String displayName, String avatarUrl) {
         try {
-            Map<String, Object> body = Map.of(
-                    "data", Map.of(
-                            "display_name", displayName,
-                            "avatar_url", avatarUrl));
+            Map<String, Object> body = new HashMap<>();
+            Map<String, Object> meta = new HashMap<>();
+
+            meta.put("display_name", displayName);
+            if (avatarUrl != null) {
+                meta.put("avatar_url", avatarUrl);
+            }
+
+            body.put("data", meta);
 
             SupabaseUserResponse response = supabaseWebClient
                     .put()

@@ -101,6 +101,7 @@ public class AuthController {
                 result.getId(),
                 result.getEmail(),
                 result.getDisplayName(),
+                result.getAvatarUrl(),
                 result.getCreatedAt());
 
         return ResponseEntity.ok(response);
@@ -151,6 +152,7 @@ public class AuthController {
                     result.getId(),
                     result.getEmail(),
                     result.getDisplayName(),
+                    result.getAvatarUrl(),
                     result.getCreatedAt());
             return ResponseEntity.ok(response);
         } else {

@@ -148,6 +148,7 @@ public class SupabaseAuthService {
                         response.getId(),
                         response.getEmail(),
                         response.getDisplayName(),
+                        response.getAvatarUrl(),
                         response.getCreatedAt());
             }
 
@@ -199,6 +200,7 @@ public class SupabaseAuthService {
                         response.getId(),
                         response.getEmail(),
                         response.getDisplayName(),
+                        response.getAvatarUrl(),
                         response.getCreatedAt());
             }
             throw new RuntimeException("Failed to get user information");
@@ -265,14 +267,16 @@ public class SupabaseAuthService {
         private String id;
         private String email;
         private String displayName;
+        private String avatarUrl;
         private String createdAt;
 
         public UserResult(boolean success, String id, String email,
-                String displayName, String createdAt) {
+                String displayName, String avatarUrl, String createdAt) {
             this.success = success;
             this.id = id;
             this.email = email;
             this.displayName = displayName;
+            this.avatarUrl = avatarUrl;
             this.createdAt = createdAt;
         }
     }

@@ -71,7 +71,9 @@ let dragIndex: number | null = null;
 const dragStart = (i: number) => (dragIndex = i);
 const dropOn = (i: number) => {
     if (dragIndex === null) return;
-    const it = items.value.splice(dragIndex, 1)[0];
+    const spliced = items.value.splice(dragIndex, 1);
+    const it = spliced[0];
+    if (!it) return;
     items.value.splice(i, 0, it);
     dragIndex = null;
 };

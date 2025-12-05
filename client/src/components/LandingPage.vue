@@ -16,7 +16,7 @@ const keywords = ref('')
 const toDisplay = ref([]);
 
 // For Tag Search
-const selectedTags = ref([]);
+const selectedTags = ref<string[]>([]);
 
 //For loading state
 const isLoading = ref(false); // เริ่มต้นเป็น false

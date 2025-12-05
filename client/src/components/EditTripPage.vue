@@ -68,7 +68,7 @@ function onSelectImages(e: Event) {
 // remove item (old or new)
 function removeItem(index: number) {
     const it = items.value[index];
-    if (it.type === 'new' && it.url) URL.revokeObjectURL(it.url);
+    if (it?.type === 'new' && it.url) URL.revokeObjectURL(it.url);
     items.value.splice(index, 1);
 }
 
@@ -77,7 +77,9 @@ let dragIndex: number | null = null;
 const dragStart = (i: number) => (dragIndex = i);
 const dropOn = (i: number) => {
     if (dragIndex === null) return;
-    const it = items.value.splice(dragIndex, 1)[0];
+    const spliced = items.value.splice(dragIndex, 1);
+    const it = spliced[0];
+    if (!it) return;
     items.value.splice(i, 0, it);
     dragIndex = null;
 };

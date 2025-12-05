@@ -52,7 +52,7 @@ onMounted(async () => {
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                     <div v-if="!user.avatarUrl" class="w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
-                        {{ user.displayName ? user.displayName[0].toUpperCase() : 'U' }}
+                        {{ user.displayName ? user.displayName[0]?.toUpperCase() : 'U' }}
                     </div>
                     <div v-else class="w-10 rounded-full">
                         <img :src="user.avatarUrl" alt="Avatar" />

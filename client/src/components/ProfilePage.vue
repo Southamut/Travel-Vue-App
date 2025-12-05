@@ -60,7 +60,7 @@ function goToEditProfile() {
                     <div class="avatar">
                         <div v-if="!user.avatarUrl"
                             class="w-60 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 mb-8">
-                            {{ user.displayName ? user.displayName[0].toUpperCase() : 'U' }}
+                            {{ user.displayName ? user.displayName[0]?.toUpperCase() : 'U' }}
                         </div>
                         <div v-else
                             class="w-60 rounded-full">

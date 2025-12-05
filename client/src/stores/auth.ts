@@ -14,12 +14,16 @@ export const useAuthStore = defineStore("auth", () => {
   } | null>(null);
   const token = ref<string | null>(localStorage.getItem("accessToken"));
 
+  // NEW: track if fetchUser has already been called
+  const userLoaded = ref(false);
+
   // --- Fetch user from token ---
   const fetchUser = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       isAuth.value = false;
       user.value = null;
+      userLoaded.value = true; // <-- Mark as loaded
       return;
     }
 
@@ -30,12 +34,14 @@ export const useAuthStore = defineStore("auth", () => {
       user.value = response.data;
       isAuth.value = true;
     } catch (err) {
-      isAuth.value = false; // ไม่ logout
+      isAuth.value = false;
       user.value = null;
     }
+
+    userLoaded.value = true; // <-- Fetch finished (success or fail)
   };
 
-  // --- Login (optional if needed later) ---
+  // --- Login ---
   const setTokens = (access: string, refresh: string) => {
     localStorage.setItem("accessToken", access);
     localStorage.setItem("refreshToken", refresh);
@@ -65,9 +71,9 @@ export const useAuthStore = defineStore("auth", () => {
     token.value = null;
     user.value = null;
     isAuth.value = false;
+    userLoaded.value = false;
   };
 
-  // --- Expose values ---
   return {
     isAuth,
     user,
@@ -75,5 +81,6 @@ export const useAuthStore = defineStore("auth", () => {
     fetchUser,
     logout,
     setTokens,
+    userLoaded, // <-- Export this
   };
 });

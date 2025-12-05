@@ -10,11 +10,6 @@ import { X } from 'lucide-vue-next';
 const auth = useAuthStore();
 const router = useRouter();
 
-onMounted(async () => {
-    await auth.fetchUser();
-    if (!auth.isAuth) router.push("/login");
-});
-
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 const keywords = ref('');

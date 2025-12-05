@@ -8,11 +8,6 @@ import { User, Mail } from 'lucide-vue-next';
 const auth = useAuthStore();
 const router = useRouter();
 
-onMounted(async () => {
-    await auth.fetchUser();
-    if (!auth.isAuth) router.push("/login");
-});
-
 interface UserProfile {
     id: number;
     displayName: string | null;

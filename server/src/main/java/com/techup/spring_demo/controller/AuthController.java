@@ -4,6 +4,7 @@ import com.techup.spring_demo.dto.LoginRequest;
 import com.techup.spring_demo.dto.LoginResponse;
 import com.techup.spring_demo.dto.LogoutResponse;
 import com.techup.spring_demo.dto.UserResponse;
+import com.techup.spring_demo.dto.user.UpdateProfileRequest;
 import com.techup.spring_demo.dto.RegisterRequest;
 import com.techup.spring_demo.dto.RegisterResponse;
 import com.techup.spring_demo.service.SupabaseAuthService;
@@ -12,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
-
 
 @RestController
 @RequestMapping("/api/auth")
@@ -85,16 +84,18 @@ public class AuthController {
     @PutMapping("/profile")
     public ResponseEntity<UserResponse> updateProfile(
             @RequestHeader("Authorization") String authorization,
-            @RequestBody Map<String, String> body) {
+            @RequestBody UpdateProfileRequest request) {
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             throw new RuntimeException("Unauthorized: No token provided");
         }
 
-        String token = authorization.substring(7);
-        String displayName = body.get("displayName");
+        String displayName = request.getDisplayName();
+        String avatarUrl = request.getAvatarUrl();
 
-        SupabaseAuthService.UserResult result = supabaseAuthService.updateProfile(token, displayName);
+        String token = authorization.substring(7);
+
+        SupabaseAuthService.UserResult result = supabaseAuthService.updateProfile(token, displayName, avatarUrl);
 
         UserResponse response = new UserResponse(
                 result.getId(),

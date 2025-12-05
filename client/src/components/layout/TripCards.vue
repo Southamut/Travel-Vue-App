@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link, ImageOff } from 'lucide-vue-next';
 import { defineProps, defineEmits } from 'vue';
-import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToastStore } from '../../stores/toast'
 
@@ -132,11 +131,6 @@ const goToTripDetail = (id: number) => {
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div v-if="showToast" class="toast toast-end">
-            <div :class="['alert', toastType === 'success' ? 'alert-success' : 'alert-error']">
-                <span class="text-xl text-white">{{ toastMessage }}</span>
             </div>
         </div>
     </div>

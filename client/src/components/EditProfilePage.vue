@@ -3,11 +3,13 @@ import { ref } from "vue";
 import axios from "axios";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from 'vue-router';
+import { useToastStore } from '../stores/toast'
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 const auth = useAuthStore();
 const router = useRouter();
+const toast = useToastStore()
 
 const displayName = ref(auth.user?.displayName ?? "");
 const selectedFile = ref<File | null>(null);
@@ -32,44 +34,50 @@ function removeImage() {
 
 async function submitAll() {
     if (!auth.token) {
-        alert("No token. Please login again.");
+        toast.error("No token. Please login again.");
         return;
     }
 
     isSubmitting.value = true;
 
     try {
-        // 1️⃣ Update username
-        await axios.put(
-            `${API_BASE}/auth/profile`,
-            { displayName: displayName.value },
-            { headers: { Authorization: `Bearer ${auth.token}` } }
-        );
+        let updatedAvatarUrl: string | null = null;
 
-        auth.user.displayName = displayName.value;
-
-        // 2️⃣ Upload image (ถ้ามีเลือกไฟล์)
+        // 1️⃣ Upload image (ถ้ามีเลือกไฟล์)
         if (selectedFile.value) {
             const formData = new FormData();
             formData.append("file", selectedFile.value);
 
-            await axios.post(`${API_BASE}/files/upload`, formData, {
+            const res = await axios.post(`${API_BASE}/files/upload`, formData, {
                 headers: {
                     Authorization: `Bearer ${auth.token}`,
                     "Content-Type": "multipart/form-data",
                 },
             });
+
+            updatedAvatarUrl = res.data.url; // URL ของไฟล์ใน Supabase Storage
         }
 
+        // 2️⃣ Update profile (displayName + avatarUrl)
+        const payload: { displayName?: string; avatarUrl?: string } = {};
+        if (displayName.value) payload.displayName = displayName.value;
+        if (updatedAvatarUrl) payload.avatarUrl = updatedAvatarUrl;
+
+        const result = await axios.put(`${API_BASE}/auth/profile`, payload, {
+            headers: { Authorization: `Bearer ${auth.token}` },
+        });
+
         router.push('/profile');
-        alert("Profile updated!");
+        toast.success("Profile updated!");
+
     } catch (err) {
         console.error(err);
-        alert("Failed to update profile");
+        toast.error("Failed to update profile");
     } finally {
         isSubmitting.value = false;
     }
 }
+
 </script>
 
 <template>
@@ -95,7 +103,11 @@ async function submitAll() {
 
                     <div v-if="previewUrl" class="mt-4 flex flex-col items-center gap-3">
 
-                        <img :src="previewUrl" class="avatar w-40 rounded-full" />
+                        <div class="avatar">
+                            <div class="w-40 rounded-full">
+                                <img :src="previewUrl" alt="Avatar" />
+                            </div>
+                        </div>
 
                         <button class="btn btn-sm bg-red-500 text-white rounded-full" @click="removeImage">
                             Remove Image

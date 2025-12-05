@@ -19,8 +19,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   // --- Fetch user from token ---
   const fetchUser = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
+    if (!token.value) {
       isAuth.value = false;
       user.value = null;
       userLoaded.value = true; // <-- Mark as loaded
@@ -29,7 +28,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     try {
       const response = await axios.get(`${API_BASE}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token.value}` },
       });
       user.value = response.data;
       isAuth.value = true;
@@ -51,14 +50,12 @@ export const useAuthStore = defineStore("auth", () => {
 
   // --- Logout ---
   const logout = async () => {
-    const token = localStorage.getItem("accessToken");
-
     try {
       await axios.post(
         `${API_BASE}/auth/logout`,
         {},
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token.value}` },
         }
       );
     } catch (e) {
@@ -72,6 +69,8 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
     isAuth.value = false;
     userLoaded.value = false;
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
   };
 
   return {

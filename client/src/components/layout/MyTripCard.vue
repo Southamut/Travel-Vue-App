@@ -52,7 +52,7 @@ const confirmDeleteTrip = async (item: any) => {
         // ปิด modal ก่อนหรือหลังก็ได้
         const token = auth.token;
         if (!token) {
-            alert("No token found, please login.");
+            toast.error("No token found, please login.");
             return;
         }
 
@@ -75,8 +75,6 @@ const confirmDeleteTrip = async (item: any) => {
         toast.error("Failed to delete trip");
 
     }
-    // Auto-hide toast
-    setTimeout(() => (showToast.value = false), 2500);
 };
 
 const openModal = (item: any) => {

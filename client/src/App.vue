@@ -2,8 +2,19 @@
 import Navbar from './components/layout/Navbar.vue'
 import Footer from './components/layout/Footer.vue'
 import { useToastStore } from './stores/toast'
+import { watch } from "vue";
+import { useAuthStore } from "./stores/auth";
+import { useRouter } from "vue-router";
 
 const toast = useToastStore()
+const auth = useAuthStore();
+const router = useRouter();
+
+watch(() => auth.isAuth, (newVal) => {
+  if (!newVal) {
+    router.replace("/login");
+  }
+});
 </script>
 
 <template>

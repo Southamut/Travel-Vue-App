@@ -41,30 +41,35 @@ async function submitAll() {
     isSubmitting.value = true;
 
     try {
-        // 1️⃣ Update username
-        await axios.put(
-            `${API_BASE}/auth/profile`,
-            { displayName: displayName.value },
-            { headers: { Authorization: `Bearer ${auth.token}` } }
-        );
+        let updatedAvatarUrl: string | null = null;
 
-        auth.user.displayName = displayName.value;
-
-        // 2️⃣ Upload image (ถ้ามีเลือกไฟล์)
+        // 1️⃣ Upload image (ถ้ามีเลือกไฟล์)
         if (selectedFile.value) {
             const formData = new FormData();
             formData.append("file", selectedFile.value);
 
-            await axios.post(`${API_BASE}/files/upload`, formData, {
+            const res = await axios.post(`${API_BASE}/files/upload`, formData, {
                 headers: {
                     Authorization: `Bearer ${auth.token}`,
                     "Content-Type": "multipart/form-data",
                 },
             });
+
+            updatedAvatarUrl = res.data.url; // URL ของไฟล์ใน Supabase Storage
         }
 
+        // 2️⃣ Update profile (displayName + avatarUrl)
+        const payload: { displayName?: string; avatarUrl?: string } = {};
+        if (displayName.value) payload.displayName = displayName.value;
+        if (updatedAvatarUrl) payload.avatarUrl = updatedAvatarUrl;
+
+        const result = await axios.put(`${API_BASE}/auth/profile`, payload, {
+            headers: { Authorization: `Bearer ${auth.token}` },
+        });
+
         router.push('/profile');
-         toast.success("Profile updated!");
+        toast.success("Profile updated!");
+
     } catch (err) {
         console.error(err);
         toast.error("Failed to update profile");
@@ -72,6 +77,7 @@ async function submitAll() {
         isSubmitting.value = false;
     }
 }
+
 </script>
 
 <template>
@@ -97,7 +103,11 @@ async function submitAll() {
 
                     <div v-if="previewUrl" class="mt-4 flex flex-col items-center gap-3">
 
-                        <img :src="previewUrl" class="avatar w-40 rounded-full" />
+                        <div class="avatar">
+                            <div class="w-40 rounded-full">
+                                <img :src="previewUrl" alt="Avatar" />
+                            </div>
+                        </div>
 
                         <button class="btn btn-sm bg-red-500 text-white rounded-full" @click="removeImage">
                             Remove Image

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { User, PlaneTakeoff, LogOut, Handbag } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
@@ -10,9 +11,30 @@ const auth = useAuthStore();
 
 const { isAuth } = storeToRefs(auth);
 
+interface UserProfile {
+    id: number;
+    displayName: string | null;
+    avatarUrl?: string | null;
+    email: string;
+}
+
+const user = ref<UserProfile>({
+    id: 0,
+    displayName: null,
+    avatarUrl: null,
+    email: "",
+});
+
 // Initialize auth on page load
-onMounted(() => {
-    auth.fetchUser();
+onMounted(async () => {
+    try {
+        await auth.fetchUser();
+        if (auth.user) {
+            user.value = auth.user;
+        }
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
 });
 </script>
 
@@ -29,8 +51,11 @@ onMounted(() => {
         <div v-if="isAuth" class="flex gap-2">
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
-                    <div class="w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
-                        {{ auth.user?.displayName ? auth.user.displayName[0].toUpperCase() : 'U' }}
+                    <div v-if="!user.avatarUrl" class="w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
+                        {{ user.displayName ? user.displayName[0].toUpperCase() : 'U' }}
+                    </div>
+                    <div v-else class="w-10 rounded-full">
+                        <img :src="user.avatarUrl" alt="Avatar" />
                     </div>
                 </div>
 

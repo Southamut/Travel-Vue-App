@@ -11,12 +11,14 @@ const router = useRouter();
 interface UserProfile {
     id: number;
     displayName: string | null;
+    avatarUrl?: string | null;
     email: string;
 }
 
 const user = ref<UserProfile>({
     id: 0,
     displayName: null,
+    avatarUrl: null,
     email: "",
 });
 
@@ -56,8 +58,13 @@ function goToEditProfile() {
                 <div class="mt-10 flex flex-col items-center gap-2">
                     <!-- profile pic -->
                     <div class="avatar">
-                        <div class="w-60 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 mb-8">
-                            {{ user?.displayName ? user.displayName[0].toUpperCase() : 'U' }}
+                        <div v-if="!user.avatarUrl"
+                            class="w-60 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 mb-8">
+                            {{ user.displayName ? user.displayName[0].toUpperCase() : 'U' }}
+                        </div>
+                        <div v-else
+                            class="w-60 rounded-full">
+                            <img :src="user.avatarUrl" alt="Avatar" />
                         </div>
                     </div>
                     <!-- display name -->

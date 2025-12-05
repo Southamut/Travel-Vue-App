@@ -6,11 +6,13 @@ import 'leaflet/dist/leaflet.css';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { ArrowLeft } from 'lucide-vue-next';
+import { useToastStore } from '../stores/toast'
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
 const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
+const toast = useToastStore()
 
 const tripId = Number(route.params.id);
 
@@ -52,7 +54,7 @@ function onSelectImages(e: Event) {
     const selected = Array.from(inp.files);
 
     if (items.value.length + selected.length > 4) {
-        alert('You can only have up to 4 images.');
+        toast.error('You can only have up to 4 images.');
         return;
     }
 
@@ -180,7 +182,7 @@ const loadTrip = async () => {
         };
     } catch (err) {
         console.error(err);
-        alert('Failed to load trip');
+        toast.error('Failed to load trip');
         router.back();
     }
 };
@@ -214,7 +216,7 @@ const submitEdit = async () => {
     if (!latitude.value || !longitude.value) { errors.value.location = 'Location is required'; hasError = true; }
     if (hasError) return;
 
-    if (!auth.token) { alert('Please login'); return; }
+    if (!auth.token) { toast.error('Please login'); return; }
 
     isSubmitting.value = true;
     try {
@@ -255,7 +257,7 @@ const submitEdit = async () => {
         router.push('/my-trips');
     } catch (err) {
         console.error(err);
-        alert('Failed to update trip');
+        toast.error('Failed to update trip');
     } finally {
         isSubmitting.value = false;
     }

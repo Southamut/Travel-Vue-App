@@ -3,11 +3,13 @@ import { ref } from "vue";
 import axios from "axios";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from 'vue-router';
+import { useToastStore } from '../stores/toast'
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 const auth = useAuthStore();
 const router = useRouter();
+const toast = useToastStore()
 
 const displayName = ref(auth.user?.displayName ?? "");
 const selectedFile = ref<File | null>(null);
@@ -32,7 +34,7 @@ function removeImage() {
 
 async function submitAll() {
     if (!auth.token) {
-        alert("No token. Please login again.");
+        toast.error("No token. Please login again.");
         return;
     }
 
@@ -62,10 +64,10 @@ async function submitAll() {
         }
 
         router.push('/profile');
-        alert("Profile updated!");
+         toast.success("Profile updated!");
     } catch (err) {
         console.error(err);
-        alert("Failed to update profile");
+        toast.error("Failed to update profile");
     } finally {
         isSubmitting.value = false;
     }

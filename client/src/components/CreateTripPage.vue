@@ -6,11 +6,13 @@ import 'leaflet/dist/leaflet.css';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { ArrowLeft } from 'lucide-vue-next';
+import { useToastStore } from '../stores/toast'
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 const router = useRouter();
 const auth = useAuthStore();
+const toast = useToastStore()
 
 // --- form state ---
 const title = ref('');
@@ -47,7 +49,7 @@ function onSelectImages(e: Event) {
     const selected = Array.from(inp.files);
 
     if (items.value.length + selected.length > 4) {
-        alert('You can only upload up to 4 images.');
+        toast.error('You can only upload up to 4 images.');
         return;
     }
 
@@ -161,7 +163,7 @@ const submitCreate = async () => {
     if (!latitude.value || !longitude.value) { errors.value.location = 'Location is required'; hasError = true; }
     if (hasError) return;
 
-    if (!auth.token) { alert('Please login'); return; }
+    if (!auth.token) { toast.error('Please login'); return; }
 
     isSubmitting.value = true;
     try {
@@ -200,7 +202,7 @@ const submitCreate = async () => {
         router.push('/my-trips');
     } catch (err) {
         console.error(err);
-        alert('Failed to create trip');
+        toast.error('Failed to create trip');
     } finally {
         isSubmitting.value = false;
     }
@@ -245,6 +247,8 @@ onMounted(() => {
                         class="input input-bordered w-full bg-[#EFECE3] dark:bg-[#222831]" />
                     <button @click="addTag" class="btn bg-[#4A70A9] text-white">Add</button>
                 </div>
+                <p v-if="errors.tags" class="text-red-500 text-sm mt-1">{{ errors.tags }}</p>
+
 
                 <!-- Photos -->
                 <label class="block text-lg text-[#4A70A9] font-medium mt-8 mb-2">Photos (Max 4)</label>

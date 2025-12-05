@@ -124,14 +124,18 @@ watch([keywords, currentPage], () => {
                     <span v-for="tag in selectedTags" :key="tag"
                         class="badge badge-outline text-lg text-gray-500 dark:text-[#DEDED1] transition-transform duration-300 transform hover:scale-105">
                         {{ tag }}
-                        <button @click="removeTag(tag)" class="text-gray-500 dark:text-[#DEDED1] font-medium"><X class="h-4 w-4"/></button>
+                        <button @click="removeTag(tag)" class="text-gray-500 dark:text-[#DEDED1] font-medium">
+                            <X class="h-4 w-4" />
+                        </button>
                     </span>
                 </div>
             </div>
 
             <!-- show loading -->
-            <div v-if="isLoading" class="flex justify-center items-center mt-20 min-h-[30vh]">
-                <span class="loading loading-dots loading-xl text-[#4A70A9]"></span>
+            <div v-if="isLoading" class="h-screen">
+                <div class="flex justify-center items-center mt-20 min-h-[30vh]">
+                    <span class="loading loading-dots loading-xl text-[#4A70A9]"></span>
+                </div>
             </div>
             <div v-else>
                 <!-- trip cards -->

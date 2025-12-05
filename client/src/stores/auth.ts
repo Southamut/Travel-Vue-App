@@ -1,67 +1,86 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import axios from 'axios';
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-export const useAuthStore = defineStore('auth', () => {
-    // --- State ---
-    const isAuth = ref(false);
-    const user = ref<{ id: number; display_name: string | null; email: string } | null>(null);
+export const useAuthStore = defineStore("auth", () => {
+  // --- State ---
+  const isAuth = ref(false);
+  const user = ref<{
+    id: number;
+    displayName: string | null;
+    email: string;
+  } | null>(null);
+  const token = ref<string | null>(localStorage.getItem("accessToken"));
 
-    // --- Fetch user from token ---
-    const fetchUser = async () => {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-            isAuth.value = false;
-            user.value = null;
-            return;
+  // NEW: track if fetchUser has already been called
+  const userLoaded = ref(false);
+
+  // --- Fetch user from token ---
+  const fetchUser = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      isAuth.value = false;
+      user.value = null;
+      userLoaded.value = true; // <-- Mark as loaded
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API_BASE}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      user.value = response.data;
+      isAuth.value = true;
+    } catch (err) {
+      isAuth.value = false;
+      user.value = null;
+    }
+
+    userLoaded.value = true; // <-- Fetch finished (success or fail)
+  };
+
+  // --- Login ---
+  const setTokens = (access: string, refresh: string) => {
+    localStorage.setItem("accessToken", access);
+    localStorage.setItem("refreshToken", refresh);
+    token.value = access;
+    fetchUser();
+  };
+
+  // --- Logout ---
+  const logout = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      await axios.post(
+        `${API_BASE}/auth/logout`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
+      );
+    } catch (e) {
+      console.warn("Logout error ignored");
+    }
 
-        try {
-            const response = await axios.get(`${API_BASE}/auth/me`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            user.value = response.data;
-            isAuth.value = true;
-        } catch (err) {
-            console.error('AuthStore fetchUser error:', err);
-            logout();
-        }
-    };
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
 
-    // --- Login (optional if needed later) ---
-    const setTokens = (access: string, refresh: string) => {
-        localStorage.setItem('accessToken', access);
-        localStorage.setItem('refreshToken', refresh);
-        fetchUser();
-    };
+    token.value = null;
+    user.value = null;
+    isAuth.value = false;
+    userLoaded.value = false;
+  };
 
-    // --- Logout ---
-    const logout = async () => {
-        const token = localStorage.getItem('accessToken');
-
-        try {
-            await axios.post(`${API_BASE}/auth/logout`, {}, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-        } catch (e) {
-            console.warn("Logout error ignored");
-        }
-
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-
-        user.value = null;
-        isAuth.value = false;
-    };
-
-    // --- Expose values ---
-    return {
-        isAuth,
-        user,
-        fetchUser,
-        logout,
-        setTokens,
-    };
+  return {
+    isAuth,
+    user,
+    token,
+    fetchUser,
+    logout,
+    setTokens,
+    userLoaded, // <-- Export this
+  };
 });

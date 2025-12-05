@@ -30,7 +30,7 @@ onMounted(() => {
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                     <div class="w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
-                        {{ auth.user?.display_name ? auth.user.display_name[0].toUpperCase() : 'U' }}
+                        {{ auth.user?.displayName ? auth.user.displayName[0].toUpperCase() : 'U' }}
                     </div>
                 </div>
 
@@ -65,7 +65,7 @@ onMounted(() => {
         <!-- Not Logged In -->
         <div v-else class="flex gap-2">
             <button @click="router.push('/login')" class="btn btn-outline btn-sm">Login</button>
-            <button @click="router.push('/register')" class="btn btn-primary btn-sm">Register</button>
+            <button @click="router.push('/register')" class="btn btn-neutral btn-sm">Register</button>
         </div>
     </div>
 </template>

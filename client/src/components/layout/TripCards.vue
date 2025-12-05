@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { Link, ImageOff } from 'lucide-vue-next';
-import { it } from 'node:test';
 import { defineProps, defineEmits } from 'vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useToastStore } from '../../stores/toast'
 
 // ----------------------------------------------------
 // 1. Component ย่อย: LinkButton (สำหรับปุ่มคัดลอกลิงก์)
 // ----------------------------------------------------
 
 // Function for copy link
-const showToast = ref(false);
-const toastType = ref(''); // 'success' หรือ 'error'
-const toastMessage = ref('');
+const toast = useToastStore()
 const router = useRouter();
 
 
@@ -23,21 +21,12 @@ const copyToClipboard = async (id: number) => {
         await navigator.clipboard.writeText(text);
 
         // แสดง Toast สำเร็จ
-        toastType.value = 'success';
-        toastMessage.value = 'Link copied to clipboard!';
-        showToast.value = true;
+        toast.success('Link copied to clipboard!')
 
     } catch (error) {
         // แสดง Toast ล้มเหลว
-        toastType.value = 'error';
-        toastMessage.value = 'Failed to copy link!';
-        showToast.value = true;
+        toast.error('Failed to copy link!')
     }
-
-    // ตั้งเวลาซ่อน Toast
-    setTimeout(() => {
-        showToast.value = false;
-    }, 3000); // 3 วินาที
 };
 
 // ----------------------------------------------------
@@ -137,7 +126,8 @@ const goToTripDetail = (id: number) => {
                             </div>
                         </div>
                         <button @click.stop="copyToClipboard(item.id)"
-                            class="btn btn-ghost border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16">
+                            class="btn btn-ghost tooltip tooltip-bottom tooltip-primary border-2 border-[#4A70A9] dark:border-[#DFD0B8] rounded-full aspect-square w-12 h-12 sm:w-16 sm:h-16"
+                            data-tip="Copy Link">
                             <Link class="text-[#4A70A9] dark:text-[#DFD0B8]" />
                         </button>
                     </div>

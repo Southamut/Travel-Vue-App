@@ -10,11 +10,6 @@ import { X } from 'lucide-vue-next';
 const auth = useAuthStore();
 const router = useRouter();
 
-onMounted(async () => {
-    await auth.fetchUser();
-    if (!auth.isAuth) router.push("/login");
-});
-
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 const keywords = ref('');
@@ -40,11 +35,10 @@ const goToPage = (page: number) => {
 
 const getData = async () => {
     isLoading.value = true;
-    const token = localStorage.getItem('accessToken');
 
     try {
         const res = await axios.get(`${API_BASE}/trips/mine`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${auth.token}` },
             params: {
                 page: currentPage.value,
                 size: itemsPerPage.value,
@@ -89,8 +83,12 @@ watch([keywords, currentPage], () => {
     <div class="bg-[#EFECE3] dark:bg-[#222831] w-full font-prompt">
         <div class="max-w-7xl mx-auto">
             <!-- title -->
-            <div class="flex flex-col items-center justify-center pt-15">
+            <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-between pt-15 w-9/12 mx-auto">
                 <h1 class="text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">My Trips</h1>
+                <button @click="router.push('/my-trips/create')"
+                    class="btn bg-[#4A70A9] text-white rounded-full px-6 py-6 mt-4 hover:bg-[#3a5f91] transition-colors">
+                    Create Trip
+                </button>
             </div>
 
             <!-- search box  -->
@@ -113,8 +111,10 @@ watch([keywords, currentPage], () => {
             </div>
 
             <!-- show loading -->
-            <div v-if="isLoading" class="flex justify-center items-center mt-20 min-h-[30vh]">
-                <span class="loading loading-dots loading-xl text-[#4A70A9]"></span>
+            <div v-if="isLoading" class="h-screen">
+                <div class="flex justify-center items-center mt-20 min-h-[30vh]">
+                    <span class="loading loading-dots loading-xl text-[#4A70A9]"></span>
+                </div>
             </div>
             <div v-else>
                 <!-- trip cards -->

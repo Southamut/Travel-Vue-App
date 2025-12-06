@@ -78,7 +78,7 @@ const copyShareLink = async () => {
         <div class="max-w-6xl mx-auto px-6 py-10">
             <!-- Back Button -->
             <button @click="router.back()"
-                class="btn btn-ghost sm:text-xl lg:text-2xl text-[#4A70A9] dark:text-[#DEDED1] mb-6">
+                class="btn rounded-full mb-6">
                 <ArrowLeft class="w-5 h-5 mr-1" /> Back
             </button>
 
@@ -94,7 +94,7 @@ const copyShareLink = async () => {
 
             <!-- Trip Detail Content -->
             <div v-else>
-                <h1 class="text-2xl md:text-4xl font-bold text-[#4A70A9] dark:text-[#DEDED1] mb-10 text-center">
+                <h1 class="text-2xl md:text-3xl font-bold text-[#4A70A9] dark:text-[#DEDED1] mb-10 text-center">
                     {{ trip.title }}
                 </h1>
 

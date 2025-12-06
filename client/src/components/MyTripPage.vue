@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import axios from 'axios';
 import MyTripCard from './layout/MyTripCard.vue';
-import { X } from 'lucide-vue-next';
+import { X, FilePlusCorner } from 'lucide-vue-next';
 
 //auth
 const auth = useAuthStore();
@@ -83,19 +83,21 @@ watch([keywords, currentPage], () => {
     <div class="bg-[#EFECE3] dark:bg-[#222831] w-full font-prompt">
         <div class="max-w-7xl mx-auto">
             <!-- title -->
-            <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-between pt-15 w-9/12 mx-auto">
-                <h1 class="text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">My Trips</h1>
+            <div class="flex flex-row items-center justify-between pt-15 w-9/12 mx-auto">
+                <h1 class="text-4xl sm:text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">My Trips</h1>
                 <button @click="router.push('/my-trips/create')"
-                    class="btn bg-[#4A70A9] text-white rounded-full px-6 py-6 mt-4 hover:bg-[#3a5f91] transition-colors">
-                    Create Trip
+                    class=" btn bg-[#4A70A9] text-white rounded-full px-6 py-6 mt-4 hover:bg-[#3a5f91] transition-colors">
+                    <FilePlusCorner class="inline-block h-6 w-6" />
+                    <p class="hidden sm:block">Create Trip</p>
                 </button>
             </div>
 
             <!-- search box  -->
             <div class="flex flex-col items-center justify-center mt-10 mb-5">
                 <label for="search"
-                    class="text-sm lg:text-md xl:text-xl font-medium text-gray-500 dark:text-[#DFD0B8] w-9/12 text-left">ค้นหาทริปของคุณ</label>
-                <input type="text" placeholder="ค้นหาทริปของคุณ..." id="search"
+                    class="text-sm lg:text-md xl:text-xl font-medium text-gray-500 dark:text-[#DFD0B8] w-9/12 text-left">Find
+                    your Trips</label>
+                <input type="text" placeholder="Search for your trips..." id="search"
                     class="w-9/12 p-2 text-center text-sm xl:text-xl border-b border-gray-300 dark:text-[#DFD0B8]"
                     @input="handleChange" :value="keywords" />
                 <!-- selected tags -->

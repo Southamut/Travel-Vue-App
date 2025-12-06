@@ -221,10 +221,10 @@ onMounted(() => {
         <div class="max-w-3xl mx-auto px-6">
             <!-- Back Button -->
             <button @click="router.back()"
-                class="btn btn-ghost sm:text-xl lg:text-2xl text-[#4A70A9] dark:text-[#DEDED1] mb-6">
+                class="btn rounded-full mb-6">
                 <ArrowLeft class="w-5 h-5 mr-1" /> Back
             </button>
-            <h1 class="text-5xl text-center font-medium text-[#4A70A9] dark:text-[#DEDED1] mb-10">Create Trip</h1>
+            <h1 class="text-4xl sm:text-5xl text-center font-medium text-[#4A70A9] dark:text-[#DEDED1] mb-10">Create Trip</h1>
 
             <div class="card bg-[#DEDED1] dark:bg-base-100 p-10 rounded-2xl">
                 <!-- Title -->

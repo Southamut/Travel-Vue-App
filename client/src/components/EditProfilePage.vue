@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from 'vue-router';
 import { useToastStore } from '../stores/toast'
+import { ArrowLeft } from 'lucide-vue-next';
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -82,11 +83,16 @@ async function submitAll() {
 </script>
 
 <template>
-    <div class="bg-[#EFECE3] dark:bg-[#222831] w-full font-prompt min-h-screen">
-        <div class="max-w-3xl mx-auto">
-            <div class="flex flex-col items-center justify-center pt-15 pb-8">
-                <h1 class="text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">Edit Profile</h1>
-            </div>
+    <div class="bg-[#EFECE3] dark:bg-[#222831] w-full min-h-screen font-prompt pt-12 pb-24">
+        <div class="max-w-3xl mx-auto px-6">
+            <!-- Back Button -->
+            <button @click="router.back()"
+                class="btn rounded-full mb-6">
+                <ArrowLeft class="w-5 h-5 mr-1" /> Back
+            </button>
+            <!-- title -->
+            <h1 class="text-4xl sm:text-5xl text-center font-medium text-[#4A70A9] dark:text-[#DEDED1] mb-10">Edit
+                Profile</h1>
 
             <div class="card h-full rounded-2xl! bg-[#DEDED1] dark:bg-base-100 p-10">
                 <div>

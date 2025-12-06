@@ -109,14 +109,14 @@ watch([keywords, currentPage], () => {
         <div class="max-w-7xl mx-auto">
             <!-- title -->
             <div class="flex flex-col items-center justify-center pt-15">
-                <h1 class="text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">เที่ยวไหนดี</h1>
+                <h1 class="text-4xl sm:text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">Where to Travel</h1>
             </div>
 
             <!-- search box  -->
             <div class="flex flex-col items-center justify-center mt-10 mb-5">
                 <label for="search"
-                    class="text-sm lg:text-md xl:text-xl font-medium text-gray-500 dark:text-[#DFD0B8] w-9/12 text-left">หาที่เที่ยวแล้วไปกัน</label>
-                <input type="text" placeholder="หาที่เที่ยวแล้วไปกัน..." id="search"
+                    class="text-sm lg:text-md xl:text-xl font-medium text-gray-500 dark:text-[#DFD0B8] w-9/12 text-left">Find a destination</label>
+                <input type="text" placeholder="Search for your next adventure..." id="search"
                     class="w-9/12 p-2 text-center text-sm xl:text-xl border-b border-gray-300 dark:text-[#DFD0B8]"
                     @input="handleChange" :value="keywords" />
                 <!-- selected tags -->

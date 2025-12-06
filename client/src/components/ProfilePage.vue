@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import { User, Mail } from 'lucide-vue-next';
+import { User, Mail, ArrowLeft } from 'lucide-vue-next';
 
 //auth
 const auth = useAuthStore();
@@ -43,12 +43,10 @@ function goToEditProfile() {
 </script>
 
 <template>
-    <div class="bg-[#EFECE3] dark:bg-[#222831] w-full font-prompt min-h-screen">
-        <div class="max-w-7xl mx-auto">
+    <div class="bg-[#EFECE3] dark:bg-[#222831] w-full min-h-screen font-prompt pt-12 pb-24">
+        <div class="max-w-3xl mx-auto px-6">
             <!-- title -->
-            <div class="flex flex-col items-center justify-center pt-15">
-                <h1 class="text-5xl font-medium text-[#4A70A9] dark:text-[#DEDED1]">Your Profile</h1>
-            </div>
+                <h1 class="text-4xl sm:text-5xl text-center font-medium text-[#4A70A9] dark:text-[#DEDED1] mb-10">Your Profile</h1>
 
             <!-- user info -->
             <div v-if="isLoading" class="flex justify-center items-center mt-20 min-h-[30vh]">
@@ -62,8 +60,7 @@ function goToEditProfile() {
                             class="w-60 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 mb-8">
                             {{ user.displayName ? user.displayName[0]?.toUpperCase() : 'U' }}
                         </div>
-                        <div v-else
-                            class="w-60 rounded-full">
+                        <div v-else class="w-60 rounded-full">
                             <img :src="user.avatarUrl" alt="Avatar" />
                         </div>
                     </div>

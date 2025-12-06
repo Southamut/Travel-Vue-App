@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import { User, Mail, ArrowLeft } from 'lucide-vue-next';
+import { User, Mail } from 'lucide-vue-next';
 
 //auth
 const auth = useAuthStore();
@@ -46,7 +46,8 @@ function goToEditProfile() {
     <div class="bg-[#EFECE3] dark:bg-[#222831] w-full min-h-screen font-prompt pt-12 pb-24">
         <div class="max-w-3xl mx-auto px-6">
             <!-- title -->
-                <h1 class="text-4xl sm:text-5xl text-center font-medium text-[#4A70A9] dark:text-[#DEDED1] mb-10">Your Profile</h1>
+            <h1 class="text-4xl sm:text-5xl text-center font-medium text-[#4A70A9] dark:text-[#DEDED1] mb-10">Your
+                Profile</h1>
 
             <!-- user info -->
             <div v-if="isLoading" class="flex justify-center items-center mt-20 min-h-[30vh]">

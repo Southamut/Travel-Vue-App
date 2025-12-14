@@ -1,6 +1,6 @@
-##✈️ Travel Content Platform (Vue.js & Spring Boot)A **responsive website** for travelers to **search and discover travel topics** using **keywords and tags**. Users can **register and log in** to **create and share their own travel content**.
+## ✈️ Travel Content Platform (Vue.js & Spring Boot)A **responsive website** for travelers to **search and discover travel topics** using **keywords and tags**. Users can **register and log in** to **create and share their own travel content**.
 
-###Deployed WebsiteYou can check the project at: [https://travel-vue-app.vercel.app/](https://travel-vue-app.vercel.app/)
+### Deployed WebsiteYou can check the project at: [https://travel-vue-app.vercel.app/](https://travel-vue-app.vercel.app/)
 
 ---
 
@@ -38,7 +38,8 @@ Frontend (Vue)  ◄──► Backend (Spring Boot)  ◄──►   Database
 
 ---
 
-##📁 Project Structure```
+## 📁 Project Structure
+```
 travel-app-project/
 ├── backend/
 │   └── src/main/java

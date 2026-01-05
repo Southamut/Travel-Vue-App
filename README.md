@@ -2,8 +2,8 @@
 
 A **responsive website** for travelers to **search and discover travel topics** using **keywords and tags**. Users can **register and log in** to **create and share their own travel content**.
 
-### Deployed WebsiteYou can check the project at: [https://travel-vue-app.vercel.app/](https://travel-vue-app.vercel.app/)
-
+### Deployed Website, You can check the project at: [https://travel-vue-app.vercel.app/](https://travel-vue-app.vercel.app/)
+### Video Demo, Showing feature of this project: https://youtu.be/rpyktVDrG-k?si=DhVDhHF9Qto-jJW
 ---
 
 ## 🏗️ Architecture Overview
